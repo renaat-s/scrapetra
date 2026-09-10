@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ScrapeTra - B2B Lead Scraping Agent</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1><span>ScrapeTra</span> Lead Agent</h1>
+    <p>Autonomous B2B lead scraping, verification &amp; outreach</p>
+  </div>
+
+  <!-- NAV TABS -->
+  <div class="tab-bar">
+    <button class="tab active" onclick="showTab('search')">Quick Search</button>
+    <button class="tab" onclick="showTab('campaigns')">Campaigns</button>
+    <button class="tab" onclick="showTab('new-campaign')">New Campaign</button>
+  </div>
+
+  <!-- QUICK SEARCH TAB -->
+  <div id="tab-search">
+    <div class="card" id="search-card">
+      <h2>Quick Search</h2>
+      <form id="search-form">
+        <div class="form-row">
+          <div class="form-group" style="flex:2">
+            <label>Target Keyword</label>
+            <input type="text" id="keyword" placeholder="e.g. Logistics companies in Manchester" required>
+          </div>
+          <div class="form-group" style="flex:0 0 120px">
+            <label>Count</label>
+            <input type="number" id="count" value="10" min="1" max="100">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="flex:2">
+            <label>API Key</label>
+            <input type="password" id="api-key" placeholder="scrapetra-demo-key-2026" required>
+          </div>
+          <div style="display:flex;align-items:flex-end">
+            <button type="submit" id="search-btn">Scrape Leads</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="card hidden" id="status-card">
+      <h2>Agent Status</h2>
+      <div class="status-bar" id="status-bar">
+        <div class="dot pending" id="status-dot"></div>
+        <span id="status-text">Initializing...</span>
+      </div>
+      <div class="meta" id="search-meta"></div>
+    </div>
+
+    <div class="card hidden" id="results-card">
+      <h2>Results <span class="count-badge" id="lead-count">0</span></h2>
+      <div style="overflow-x:auto">
+        <table class="results-table">
+          <thead>
+            <tr><th>Company</th><th>Email</th><th>Verified</th><th>MX OK</th><th>Source</th></tr>
+          </thead>
+          <tbody id="leads-body"></tbody>
+        </table>
+      </div>
+      <div class="btn-row" style="margin-top:16px">
+        <button class="green" onclick="downloadSearchCSV()">Download CSV (API Key)</button>
+        <button class="secondary" onclick="resetSearchForm()">New Search</button>
+      </div>
+    </div>
+
+    <div class="card hidden" id="payment-card">
+      <h2>Payment Required</h2>
+      <p style="color:var(--text2);margin-bottom:12px">Complete payment to download your lead data as CSV.</p>
+      <div class="btn-row">
+        <button class="green" onclick="openStripeCheckout()">Pay with Stripe</button>
+        <button class="secondary" onclick="document.getElementById('payment-card').classList.add('hidden')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CAMPAIGNS LIST TAB -->
+  <div id="tab-campaigns" class="hidden">
+    <div class="card">
+      <h2>Outreach Campaigns</h2>
+      <div id="campaigns-list"></div>
+    </div>
+
+    <div class="card hidden" id="campaign-detail-card">
+      <h2 id="cd-title">Campaign Detail</h2>
+      <div id="cd-stats" style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px"></div>
+      <div style="overflow-x:auto">
+        <table class="results-table">
+          <thead>
+            <tr><th>Company</th><th>Email</th><th>Verified</th><th>MX OK</th></tr>
+          </thead>
+          <tbody id="cd-leads-body"></tbody>
+        </table>
+      </div>
+      <div class="btn-row" style="margin-top:16px">
+        <button class="green" onclick="sendPitches()">Send Pitches</button>
+        <button onclick="fulfillCampaign()">Fulfill (Send CSV)</button>
+        <button class="secondary" onclick="document.getElementById('campaign-detail-card').classList.add('hidden')">Back</button>
+      </div>
+      <div id="cd-logs" style="margin-top:16px"></div>
+    </div>
+  </div>
+
+  <!-- NEW CAMPAIGN TAB -->
+  <div id="tab-new-campaign" class="hidden">
+    <div class="card">
+      <h2>Create Outreach Campaign</h2>
+      <form id="campaign-form">
+        <div class="form-row">
+          <div class="form-group" style="flex:2">
+            <label>Campaign Name</label>
+            <input type="text" id="c-name" placeholder="e.g. Manchester Logistics May 2026" required>
+          </div>
+          <div class="form-group" style="flex:1">
+            <label>API Key</label>
+            <input type="password" id="c-api-key" placeholder="scrapetra-demo-key-2026" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Category / Industry</label>
+            <input type="text" id="c-category" placeholder="e.g. Logistics companies" required>
+          </div>
+          <div class="form-group">
+            <label>City / Region</label>
+            <input type="text" id="c-city" placeholder="e.g. Manchester" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Target Lead Count</label>
+            <input type="number" id="c-count" value="20" min="5" max="200">
+          </div>
+          <div class="form-group">
+            <label>Price (£)</label>
+            <input type="number" id="c-price" value="35" min="1" step="0.50">
+          </div>
+          <div class="form-group">
+            <label>Template</label>
+            <select id="c-template">
+              <option value="standard">Standard Pitch</option>
+              <option value="premium">Premium Pitch</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" id="c-submit" style="margin-top:8px">Launch Campaign</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="toast hidden" id="toast"></div>
+
+<script>
+let currentSearchId = null;
+let currentCampaignId = null;
+let pollTimer = null;
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.remove('hidden');
+  setTimeout(() => t.classList.add('hidden'), 3500);
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+function showTab(name) {
+  document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.remove('hidden');
+  event.target.classList.add('active');
+  if (name === 'campaigns') loadCampaigns();
+}
+
+// --- QUICK SEARCH ---
+document.getElementById('search-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const keyword = document.getElementById('keyword').value.trim();
+  const count = parseInt(document.getElementById('count').value) || 10;
+  const apiKey = document.getElementById('api-key').value.trim();
+  if (!keyword || !apiKey) return;
+
+  const btn = document.getElementById('search-btn');
+  btn.disabled = true; btn.textContent = 'Starting...';
+
+  try {
+    const fd = new FormData();
+    fd.append('keyword', keyword); fd.append('count', count); fd.append('api_key', apiKey);
+    const res = await fetch('/api/search', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) { showToast('Error: ' + (data.detail || 'Unknown')); btn.disabled = false; btn.textContent = 'Scrape Leads'; return; }
+    currentSearchId = data.search_id;
+    document.getElementById('status-card').classList.remove('hidden');
+    document.getElementById('results-card').classList.add('hidden');
+    pollSearchStatus();
+  } catch (err) { showToast('Request failed'); btn.disabled = false; btn.textContent = 'Scrape Leads'; }
+});
+
+function pollSearchStatus() {
+  if (pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(async () => {
+    if (!currentSearchId) return;
+    try {
+      const res = await fetch('/api/status/' + currentSearchId);
+      const data = await res.json();
+      const dot = document.getElementById('status-dot');
+      const text = document.getElementById('status-text');
+      const meta = document.getElementById('search-meta');
+      dot.className = 'dot ' + (data.status === 'completed' ? 'completed' : data.status === 'running' ? 'running' : data.status.startsWith('error') ? 'error' : 'pending');
+      text.textContent = data.status === 'completed' ? 'Done!' : data.status === 'running' ? 'Scraping & verifying leads...' : data.status.startsWith('error') ? 'Error' : 'Queued...';
+      meta.textContent = `Keyword: ${data.keyword} | Target: ${data.count} leads`;
+      if (data.status === 'completed' || data.status.startsWith('error')) {
+        clearInterval(pollTimer);
+        document.getElementById('search-btn').disabled = false;
+        document.getElementById('search-btn').textContent = 'Scrape Leads';
+        if (data.status === 'completed') loadSearchResults();
+      }
+    } catch (e) {}
+  }, 1500);
+}
+
+async function loadSearchResults() {
+  if (!currentSearchId) return;
+  const res = await fetch('/api/leads/' + currentSearchId);
+  const data = await res.json();
+  const tbody = document.getElementById('leads-body');
+  tbody.innerHTML = '';
+  document.getElementById('lead-count').textContent = data.count;
+  data.leads.forEach(l => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><strong>${esc(l.company_name)}</strong><br><small style="color:var(--text2)">${esc(l.company_url)}</small></td>
+      <td>${l.email ? '<a class="link" href="mailto:'+esc(l.email)+'">'+esc(l.email)+'</a>' : '<span class="badge na">N/A</span>'}</td>
+      <td>${l.email_valid ? '<span class="badge yes">Yes</span>' : '<span class="badge no">No</span>'}</td>
+      <td>${l.domain_valid ? '<span class="badge yes">Yes</span>' : '<span class="badge no">No</span>'}</td>
+      <td><a class="link" href="${esc(l.company_url)}" target="_blank">Visit</a></td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('results-card').classList.remove('hidden');
+}
+
+async function downloadSearchCSV() {
+  if (!currentSearchId) return;
+  const apiKey = document.getElementById('api-key').value.trim();
+  try {
+    const tokRes = await fetch('/api/download-token/' + currentSearchId + '?api_key=' + encodeURIComponent(apiKey));
+    const tokData = await tokRes.json();
+    if (!tokRes.ok) { showToast('Error: ' + (tokData.detail || 'Unauthorized')); return; }
+    window.open('/api/export/' + currentSearchId + '?token=' + encodeURIComponent(tokData.token), '_blank');
+    showToast('CSV downloaded!');
+  } catch (e) { showToast('Download failed'); }
+}
+
+async function openStripeCheckout() {
+  if (!currentSearchId) return;
+  try {
+    const res = await fetch('/api/checkout/' + currentSearchId, { method: 'POST' });
+    const data = await res.json();
+    if (data.url) window.location.href = data.url;
+    else showToast('Checkout failed');
+  } catch (e) { showToast('Payment error'); }
+}
+
+function resetSearchForm() {
+  currentSearchId = null;
+  if (pollTimer) clearInterval(pollTimer);
+  document.getElementById('status-card').classList.add('hidden');
+  document.getElementById('results-card').classList.add('hidden');
+  document.getElementById('payment-card').classList.add('hidden');
+  document.getElementById('leads-body').innerHTML = '';
+}
+
+// --- CAMPAIGNS ---
+async function loadCampaigns() {
+  try {
+    const res = await fetch('/api/campaigns');
+    const data = await res.json();
+    const el = document.getElementById('campaigns-list');
+    if (!data.campaigns.length) { el.innerHTML = '<p style="color:var(--text2)">No campaigns yet.</p>'; return; }
+    el.innerHTML = data.campaigns.map(c => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="viewCampaign('${c.id}')">
+        <div>
+          <strong>${esc(c.name)}</strong>
+          <span class="meta"> | ${esc(c.category)} in ${esc(c.city)}</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="count-badge">${c.valid_emails || 0} leads</span>
+          <span class="badge ${c.status === 'completed' || c.status === 'scraping_done' ? 'yes' : c.status.startsWith('error') ? 'no' : 'na'}">${c.status}</span>
+        </div>
+      </div>`).join('');
+  } catch (e) { showToast('Failed to load campaigns'); }
+}
+
+let activeCampaignId = null;
+
+async function viewCampaign(id) {
+  activeCampaignId = id;
+  try {
+    const res = await fetch('/api/campaigns/' + id);
+    const data = await res.json();
+    const c = data.campaign;
+    document.getElementById('cd-title').textContent = c.name;
+    document.getElementById('cd-stats').innerHTML = `
+      <div class="stat-box"><div class="stat-val">${data.lead_count}</div><div class="stat-label">Total Leads</div></div>
+      <div class="stat-box"><div class="stat-val">${c.valid_emails || 0}</div><div class="stat-label">Valid Emails</div></div>
+      <div class="stat-box"><div class="stat-val">${esc(c.status)}</div><div class="stat-label">Status</div></div>
+      <div class="stat-box"><div class="stat-val">£${c.price}</div><div class="stat-label">Price</div></div>`;
+
+    const tbody = document.getElementById('cd-leads-body');
+    tbody.innerHTML = '';
+    data.leads.forEach(l => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td><strong>${esc(l.company_name)}</strong></td>
+        <td>${l.email ? '<a class="link" href="mailto:'+esc(l.email)+'">'+esc(l.email)+'</a>' : '<span class="badge na">N/A</span>'}</td>
+        <td>${l.email_valid ? '<span class="badge yes">Yes</span>' : '<span class="badge no">No</span>'}</td>
+        <td>${l.domain_valid ? '<span class="badge yes">Yes</span>' : '<span class="badge no">No</span>'}</td>`;
+      tbody.appendChild(tr);
+    });
+
+    if (data.logs.length) {
+      document.getElementById('cd-logs').innerHTML = '<h3 style="margin-bottom:8px;font-size:.9rem;color:var(--text2)">Outreach Log</h3>' +
+        data.logs.map(l => `<div style="font-size:.8rem;color:var(--text2);padding:4px 0;border-bottom:1px solid var(--border)">${esc(l.lead_email)} - ${esc(l.status)} - ${esc(l.subject || '')}</div>`).join('');
+    }
+
+    document.getElementById('campaign-detail-card').classList.remove('hidden');
+  } catch (e) { showToast('Failed to load campaign'); }
+}
+
+async function sendPitches() {
+  if (!activeCampaignId) return;
+  const apiKey = document.getElementById('c-api-key')?.value?.trim() || prompt('Enter API Key:');
+  if (!apiKey) return;
+  try {
+    const fd = new FormData(); fd.append('api_key', apiKey);
+    const res = await fetch('/api/campaigns/' + activeCampaignId + '/pitch', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) { showToast('Error: ' + (data.detail || 'Failed')); return; }
+    showToast(`Sent ${data.emails_sent} pitch emails!`);
+    viewCampaign(activeCampaignId);
+  } catch (e) { showToast('Failed to send pitches'); }
+}
+
+async function fulfillCampaign() {
+  if (!activeCampaignId) return;
+  const email = prompt('Buyer email for CSV delivery:');
+  if (!email) return;
+  const apiKey = document.getElementById('c-api-key')?.value?.trim() || prompt('Enter API Key:');
+  if (!apiKey) return;
+  try {
+    const fd = new FormData(); fd.append('buyer_email', email); fd.append('api_key', apiKey);
+    const res = await fetch('/api/campaigns/' + activeCampaignId + '/fulfill', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) { showToast('Error: ' + (data.detail || 'Failed')); return; }
+    showToast('CSV delivered to ' + email);
+  } catch (e) { showToast('Delivery failed'); }
+}
+
+// --- NEW CAMPAIGN ---
+document.getElementById('campaign-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const apiKey = document.getElementById('c-api-key').value.trim();
+  if (!apiKey) return;
+  const btn = document.getElementById('c-submit');
+  btn.disabled = true; btn.textContent = 'Launching...';
+
+  const fd = new FormData();
+  fd.append('api_key', apiKey);
+  fd.append('name', document.getElementById('c-name').value.trim());
+  fd.append('category', document.getElementById('c-category').value.trim());
+  fd.append('city', document.getElementById('c-city').value.trim());
+  fd.append('target_count', document.getElementById('c-count').value);
+  fd.append('price', document.getElementById('c-price').value);
+  fd.append('template_style', document.getElementById('c-template').value);
+
+  try {
+    const res = await fetch('/api/campaigns', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) { showToast('Error: ' + (data.detail || 'Failed')); btn.disabled = false; btn.textContent = 'Launch Campaign'; return; }
+    showToast('Campaign launched! ID: ' + data.campaign_id.slice(0, 8));
+    btn.disabled = false; btn.textContent = 'Launch Campaign';
+    document.getElementById('campaign-form').reset();
+    showTab('campaigns');
+    document.querySelectorAll('.tab')[1].click();
+  } catch (e) { showToast('Launch failed'); btn.disabled = false; btn.textContent = 'Launch Campaign'; }
+});
+
+{% if payment_success %}
+window.addEventListener('load', async () => {
+  currentSearchId = "{{ paid_search_id }}";
+  showToast('Payment successful!');
+  loadSearchResults();
+  try {
+    const tokRes = await fetch('/api/download-token/' + currentSearchId + '?session_id=stripe_paid');
+    const tokData = await tokRes.json();
+    if (tokRes.ok && tokData.token) {
+      window.open('/api/export/' + currentSearchId + '?token=' + encodeURIComponent(tokData.token), '_blank');
+    }
+  } catch (e) {}
+});
+{% endif %}
+</script>
+</body>
+</html>
