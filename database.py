@@ -1,14 +1,24 @@
-import aiosqlite
+import asyncpg
 import os
 import uuid
 import secrets
 from datetime import datetime, timedelta
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "scrapetra.db")
+DATABASE_URL = os.getenv("DATABASE_URL", "")
+
+_pool: asyncpg.Pool | None = None
+
+
+async def _get_pool() -> asyncpg.Pool:
+    global _pool
+    if _pool is None or _pool.is_closed():
+        _pool = await asyncpg.create_pool(DATABASE_URL, min_size=1, max_size=5)
+    return _pool
 
 
 async def init_db():
-    async with aiosqlite.connect(DB_PATH) as db:
+    pool = await _get_pool()
+    async with pool.acquire() as db:
         await db.execute("""
             CREATE TABLE IF NOT EXISTS searches (
                 id TEXT PRIMARY KEY,
@@ -91,129 +101,121 @@ async def init_db():
                 FOREIGN KEY (campaign_id) REFERENCES campaigns(id)
             )
         """)
-        await db.commit()
 
 
 async def create_search(keyword: str, count: int) -> str:
     search_id = str(uuid.uuid4())
     now = datetime.utcnow().isoformat()
-    async with aiosqlite.connect(DB_PATH) as db:
+    pool = await _get_pool()
+    async with pool.acquire() as db:
         await db.execute(
-            "INSERT INTO searches (id, keyword, count, status, created_at) VALUES (?, ?, ?, 'pending', ?)",
-            (search_id, keyword, count, now),
+            "INSERT INTO searches (id, keyword, count, status, created_at) VALUES ($1, $2, $3, 'pending', $4)",
+            search_id, keyword, count, now,
         )
-        await db.commit()
     return search_id
 
 
 async def update_search_status(search_id: str, status: str):
-    async with aiosqlite.connect(DB_PATH) as db:
+    pool = await _get_pool()
+    async with pool.acquire() as db:
         now = datetime.utcnow().isoformat()
         if status == "completed":
             await db.execute(
-                "UPDATE searches SET status = ?, completed_at = ? WHERE id = ?",
-                (status, now, search_id),
+                "UPDATE searches SET status = $1, completed_at = $2 WHERE id = $3",
+                status, now, search_id,
             )
         else:
-            await db.execute("UPDATE searches SET status = ? WHERE id = ?", (status, search_id))
-        await db.commit()
+            await db.execute("UPDATE searches SET status = $1 WHERE id = $2", status, search_id)
 
 
 async def insert_leads(search_id: str, leads: list[dict]):
-    async with aiosqlite.connect(DB_PATH) as db:
+    pool = await _get_pool()
+    async with pool.acquire() as db:
         for lead in leads:
             lead_id = str(uuid.uuid4())
             await db.execute(
                 """INSERT INTO leads (id, search_id, company_name, company_url, email, email_valid, domain_valid)
-                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
-                (
-                    lead_id,
-                    search_id,
-                    lead.get("company_name", ""),
-                    lead.get("company_url", ""),
-                    lead.get("email", ""),
-                    1 if lead.get("email_valid") else 0,
-                    1 if lead.get("domain_valid") else 0,
-                ),
+                   VALUES ($1, $2, $3, $4, $5, $6, $7)""",
+                lead_id,
+                search_id,
+                lead.get("company_name", ""),
+                lead.get("company_url", ""),
+                lead.get("email", ""),
+                1 if lead.get("email_valid") else 0,
+                1 if lead.get("domain_valid") else 0,
             )
-        await db.commit()
 
 
 async def get_leads(search_id: str) -> list[dict]:
-    async with aiosqlite.connect(DB_PATH) as db:
-        db.row_factory = aiosqlite.Row
-        cursor = await db.execute(
-            "SELECT * FROM leads WHERE search_id = ?", (search_id,)
-        )
-        rows = await cursor.fetchall()
+    pool = await _get_pool()
+    async with pool.acquire() as db:
+        rows = await db.fetch("SELECT * FROM leads WHERE search_id = $1", search_id)
         return [dict(row) for row in rows]
 
 
 async def get_search(search_id: str) -> dict | None:
-    async with aiosqlite.connect(DB_PATH) as db:
-        db.row_factory = aiosqlite.Row
-        cursor = await db.execute("SELECT * FROM searches WHERE id = ?", (search_id,))
-        row = await cursor.fetchone()
+    pool = await _get_pool()
+    async with pool.acquire() as db:
+        row = await db.fetchrow("SELECT * FROM searches WHERE id = $1", search_id)
         return dict(row) if row else None
 
 
 async def create_payment(search_id: str, stripe_session_id: str = "", amount: int = 0, currency: str = "GBP") -> str:
     payment_id = str(uuid.uuid4())
     now = datetime.utcnow().isoformat()
-    async with aiosqlite.connect(DB_PATH) as db:
+    pool = await _get_pool()
+    async with pool.acquire() as db:
         await db.execute(
-            "INSERT INTO payments (id, search_id, stripe_session_id, amount, currency, status, created_at) VALUES (?, ?, ?, ?, ?, 'pending', ?)",
-            (payment_id, search_id, stripe_session_id, amount, currency, now),
+            "INSERT INTO payments (id, search_id, stripe_session_id, amount, currency, status, created_at) VALUES ($1, $2, $3, $4, $5, 'pending', $6)",
+            payment_id, search_id, stripe_session_id, amount, currency, now,
         )
-        await db.commit()
     return payment_id
 
 
 async def update_payment_status(payment_id: str, status: str):
-    async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute("UPDATE payments SET status = ? WHERE id = ?", (status, payment_id))
-        await db.commit()
+    pool = await _get_pool()
+    async with pool.acquire() as db:
+        await db.execute("UPDATE payments SET status = $1 WHERE id = $2", status, payment_id)
 
 
 async def mark_payment_paid_by_session(stripe_session_id: str):
-    async with aiosqlite.connect(DB_PATH) as db:
+    pool = await _get_pool()
+    async with pool.acquire() as db:
         await db.execute(
-            "UPDATE payments SET status = 'paid' WHERE stripe_session_id = ?",
-            (stripe_session_id,),
+            "UPDATE payments SET status = 'paid' WHERE stripe_session_id = $1",
+            stripe_session_id,
         )
-        await db.commit()
 
 
 async def mark_payment_paid_by_paypal(order_id: str):
-    async with aiosqlite.connect(DB_PATH) as db:
+    pool = await _get_pool()
+    async with pool.acquire() as db:
         await db.execute(
-            "UPDATE payments SET status = 'paid' WHERE paypal_order_id = ?",
-            (order_id,),
+            "UPDATE payments SET status = 'paid' WHERE paypal_order_id = $1",
+            order_id,
         )
-        await db.commit()
 
 
 async def create_download_token(search_id: str, ttl_seconds: int = 3600) -> str:
     token = secrets.token_urlsafe(32)
     now = datetime.utcnow()
     expires = now + timedelta(seconds=ttl_seconds)
-    async with aiosqlite.connect(DB_PATH) as db:
+    pool = await _get_pool()
+    async with pool.acquire() as db:
         await db.execute(
-            "INSERT INTO download_tokens (token, search_id, created_at, expires_at, used) VALUES (?, ?, ?, ?, 0)",
-            (token, search_id, now.isoformat(), expires.isoformat()),
+            "INSERT INTO download_tokens (token, search_id, created_at, expires_at, used) VALUES ($1, $2, $3, $4, 0)",
+            token, search_id, now.isoformat(), expires.isoformat(),
         )
-        await db.commit()
     return token
 
 
 async def validate_download_token(token: str, search_id: str) -> bool:
-    async with aiosqlite.connect(DB_PATH) as db:
-        db.row_factory = aiosqlite.Row
-        cursor = await db.execute(
-            "SELECT * FROM download_tokens WHERE token = ? AND search_id = ? AND used = 0",
-            (token, search_id),
+    pool = await _get_pool()
+    async with pool.acquire() as db:
+        row = await db.fetchrow(
+            "SELECT * FROM download_tokens WHERE token = $1 AND search_id = $2 AND used = 0",
+            token, search_id,
         )
-        row = await cursor.fetchone()
         if not row:
             return False
         row = dict(row)
@@ -221,20 +223,19 @@ async def validate_download_token(token: str, search_id: str) -> bool:
         if datetime.utcnow() > expires:
             return False
         await db.execute(
-            "UPDATE download_tokens SET used = 1 WHERE token = ?", (token,)
+            "UPDATE download_tokens SET used = 1 WHERE token = $1", token
         )
-        await db.commit()
         return True
 
 
 async def is_search_paid(search_id: str) -> bool:
-    async with aiosqlite.connect(DB_PATH) as db:
-        cursor = await db.execute(
-            "SELECT COUNT(*) FROM payments WHERE search_id = ? AND status = 'paid'",
-            (search_id,),
+    pool = await _get_pool()
+    async with pool.acquire() as db:
+        row = await db.fetchval(
+            "SELECT COUNT(*) FROM payments WHERE search_id = $1 AND status = 'paid'",
+            search_id,
         )
-        row = await cursor.fetchone()
-        return row[0] > 0
+        return row > 0
 
 
 async def create_campaign(
@@ -247,14 +248,14 @@ async def create_campaign(
 ) -> str:
     campaign_id = str(uuid.uuid4())
     now = datetime.utcnow().isoformat()
-    async with aiosqlite.connect(DB_PATH) as db:
+    pool = await _get_pool()
+    async with pool.acquire() as db:
         await db.execute(
             """INSERT INTO campaigns
                (id, name, category, city, target_count, price, template_style, status, created_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?)""",
-            (campaign_id, name, category, city, target_count, price, template_style, now),
+               VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending', $8)""",
+            campaign_id, name, category, city, target_count, price, template_style, now,
         )
-        await db.commit()
     return campaign_id
 
 
@@ -268,58 +269,54 @@ async def update_campaign(campaign_id: str, **kwargs):
     updates = {k: v for k, v in kwargs.items() if k in allowed}
     if not updates:
         return
-    set_clause = ", ".join(f"{k} = ?" for k in updates)
-    values = list(updates.values()) + [campaign_id]
-    async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute(f"UPDATE campaigns SET {set_clause} WHERE id = ?", values)
-        await db.commit()
+    keys = list(updates.keys())
+    values = list(updates.values())
+    set_clause = ", ".join(f"{k} = ${i+1}" for i, k in enumerate(keys))
+    pool = await _get_pool()
+    async with pool.acquire() as db:
+        await db.execute(f"UPDATE campaigns SET {set_clause} WHERE id = ${len(keys)+1}", *values, campaign_id)
 
 
 async def get_campaign(campaign_id: str) -> dict | None:
-    async with aiosqlite.connect(DB_PATH) as db:
-        db.row_factory = aiosqlite.Row
-        cursor = await db.execute("SELECT * FROM campaigns WHERE id = ?", (campaign_id,))
-        row = await cursor.fetchone()
+    pool = await _get_pool()
+    async with pool.acquire() as db:
+        row = await db.fetchrow("SELECT * FROM campaigns WHERE id = $1", campaign_id)
         return dict(row) if row else None
 
 
 async def get_all_campaigns(limit: int = 50) -> list[dict]:
-    async with aiosqlite.connect(DB_PATH) as db:
-        db.row_factory = aiosqlite.Row
-        cursor = await db.execute(
-            "SELECT * FROM campaigns ORDER BY created_at DESC LIMIT ?", (limit,)
-        )
-        rows = await cursor.fetchall()
+    pool = await _get_pool()
+    async with pool.acquire() as db:
+        rows = await db.fetch("SELECT * FROM campaigns ORDER BY created_at DESC LIMIT $1", limit)
         return [dict(row) for row in rows]
 
 
 async def log_outreach(campaign_id: str, lead_email: str, subject: str) -> str:
     log_id = str(uuid.uuid4())
-    async with aiosqlite.connect(DB_PATH) as db:
+    pool = await _get_pool()
+    async with pool.acquire() as db:
         await db.execute(
-            "INSERT INTO outreach_log (id, campaign_id, lead_email, subject, status) VALUES (?, ?, ?, ?, 'queued')",
-            (log_id, campaign_id, lead_email, subject),
+            "INSERT INTO outreach_log (id, campaign_id, lead_email, subject, status) VALUES ($1, $2, $3, $4, 'queued')",
+            log_id, campaign_id, lead_email, subject,
         )
-        await db.commit()
     return log_id
 
 
 async def update_outreach_status(log_id: str, status: str):
-    async with aiosqlite.connect(DB_PATH) as db:
+    pool = await _get_pool()
+    async with pool.acquire() as db:
         now = datetime.utcnow().isoformat()
         await db.execute(
-            "UPDATE outreach_log SET status = ?, sent_at = ? WHERE id = ?",
-            (status, now, log_id),
+            "UPDATE outreach_log SET status = $1, sent_at = $2 WHERE id = $3",
+            status, now, log_id,
         )
-        await db.commit()
 
 
 async def get_outreach_logs(campaign_id: str) -> list[dict]:
-    async with aiosqlite.connect(DB_PATH) as db:
-        db.row_factory = aiosqlite.Row
-        cursor = await db.execute(
-            "SELECT * FROM outreach_log WHERE campaign_id = ? ORDER BY sent_at DESC",
-            (campaign_id,),
+    pool = await _get_pool()
+    async with pool.acquire() as db:
+        rows = await db.fetch(
+            "SELECT * FROM outreach_log WHERE campaign_id = $1 ORDER BY sent_at DESC",
+            campaign_id,
         )
-        rows = await cursor.fetchall()
         return [dict(row) for row in rows]

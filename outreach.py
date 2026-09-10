@@ -181,33 +181,29 @@ def _generate_csv(leads: list[dict]) -> str:
 
 async def _update_campaign_leads(campaign_id: str, leads: list[dict]):
     import database as db
-    async with db.DB_PATH.__class__.__init__:
-        pass
-    async with __import__("aiosqlite").connect(db.DB_PATH) as database:
+    import uuid as _uuid
+    pool = await db._get_pool()
+    async with pool.acquire() as database:
         for lead in leads:
-            lead_id = __import__("uuid").uuid4().hex
+            lead_id = _uuid.uuid4().hex
             await database.execute(
                 """INSERT INTO leads (id, search_id, company_name, company_url, email, email_valid, domain_valid)
-                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
-                (
-                    lead_id,
-                    campaign_id,
-                    lead.get("company_name", ""),
-                    lead.get("company_url", ""),
-                    lead.get("email", ""),
-                    1 if lead.get("email_valid") else 0,
-                    1 if lead.get("domain_valid") else 0,
-                ),
+                   VALUES ($1, $2, $3, $4, $5, $6, $7)""",
+                lead_id,
+                campaign_id,
+                lead.get("company_name", ""),
+                lead.get("company_url", ""),
+                lead.get("email", ""),
+                1 if lead.get("email_valid") else 0,
+                1 if lead.get("domain_valid") else 0,
             )
-        await database.commit()
 
 
 async def _mark_campaign_delivered(campaign_id: str, buyer_email: str):
     import database as db
-    import aiosqlite
-    async with aiosqlite.connect(db.DB_PATH) as database:
+    pool = await db._get_pool()
+    async with pool.acquire() as database:
         await database.execute(
-            "UPDATE campaigns SET status = 'delivered', buyer_email = ?, delivered_at = ? WHERE id = ?",
-            (buyer_email, datetime.utcnow().isoformat(), campaign_id),
+            "UPDATE campaigns SET status = 'delivered', buyer_email = $1, delivered_at = $2 WHERE id = $3",
+            buyer_email, datetime.utcnow().isoformat(), campaign_id,
         )
-        await database.commit()
