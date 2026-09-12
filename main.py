@@ -73,6 +73,11 @@ async def startup():
 
 
 @app.get("/", response_class=HTMLResponse)
+async def landing(request: Request):
+    return templates.TemplateResponse("landing.html", {"request": request})
+
+
+@app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request):
     return templates.TemplateResponse("dashboard.html", {
         "request": request,
@@ -389,7 +394,7 @@ async def payment_success(request: Request, search_id: str = ""):
 
 @app.get("/payment/cancel")
 async def payment_cancel(request: Request):
-    return RedirectResponse("/")
+    return RedirectResponse("/dashboard")
 
 
 @app.get("/paypal/success")
@@ -411,7 +416,7 @@ async def paypal_success(request: Request, search_id: str = "", token: str = "")
 
 @app.get("/paypal/cancel")
 async def paypal_cancel(request: Request):
-    return RedirectResponse("/")
+    return RedirectResponse("/dashboard")
 
 
 @app.post("/webhook/stripe")
