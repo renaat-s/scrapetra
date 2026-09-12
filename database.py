@@ -12,7 +12,7 @@ _pool: asyncpg.Pool | None = None
 
 async def _get_pool() -> asyncpg.Pool:
     global _pool
-    if _pool is None or _pool.is_closed():
+    if _pool is None or _pool.is_closing():
         ssl_ctx = ssl.create_default_context()
         ssl_ctx.check_hostname = False
         ssl_ctx.verify_mode = ssl.CERT_NONE
