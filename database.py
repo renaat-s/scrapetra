@@ -2,6 +2,7 @@ import asyncpg
 import os
 import uuid
 import secrets
+import ssl
 from datetime import datetime, timedelta
 
 DATABASE_URL = os.getenv("DATABASE_URL", "")
@@ -12,95 +13,108 @@ _pool: asyncpg.Pool | None = None
 async def _get_pool() -> asyncpg.Pool:
     global _pool
     if _pool is None or _pool.is_closed():
-        _pool = await asyncpg.create_pool(DATABASE_URL, min_size=1, max_size=5)
+        ssl_ctx = ssl.create_default_context()
+        ssl_ctx.check_hostname = False
+        ssl_ctx.verify_mode = ssl.CERT_NONE
+        _pool = await asyncpg.create_pool(
+            DATABASE_URL,
+            min_size=1,
+            max_size=5,
+            ssl=ssl_ctx,
+        )
     return _pool
 
 
 async def init_db():
-    pool = await _get_pool()
-    async with pool.acquire() as db:
-        await db.execute("""
-            CREATE TABLE IF NOT EXISTS searches (
-                id TEXT PRIMARY KEY,
-                keyword TEXT NOT NULL,
-                count INTEGER NOT NULL,
-                status TEXT DEFAULT 'pending',
-                created_at TEXT,
-                completed_at TEXT
-            )
-        """)
-        await db.execute("""
-            CREATE TABLE IF NOT EXISTS leads (
-                id TEXT PRIMARY KEY,
-                search_id TEXT NOT NULL,
-                company_name TEXT,
-                company_url TEXT,
-                email TEXT,
-                email_valid INTEGER DEFAULT 0,
-                domain_valid INTEGER DEFAULT 0,
-                FOREIGN KEY (search_id) REFERENCES searches(id)
-            )
-        """)
-        await db.execute("""
-            CREATE TABLE IF NOT EXISTS payments (
-                id TEXT PRIMARY KEY,
-                search_id TEXT NOT NULL,
-                stripe_session_id TEXT,
-                paypal_order_id TEXT,
-                amount INTEGER DEFAULT 0,
-                currency TEXT DEFAULT 'GBP',
-                status TEXT DEFAULT 'pending',
-                created_at TEXT,
-                FOREIGN KEY (search_id) REFERENCES searches(id)
-            )
-        """)
-        await db.execute("""
-            CREATE TABLE IF NOT EXISTS download_tokens (
-                token TEXT PRIMARY KEY,
-                search_id TEXT NOT NULL,
-                created_at TEXT NOT NULL,
-                expires_at TEXT NOT NULL,
-                used INTEGER DEFAULT 0,
-                FOREIGN KEY (search_id) REFERENCES searches(id)
-            )
-        """)
-        await db.execute("""
-            CREATE TABLE IF NOT EXISTS campaigns (
-                id TEXT PRIMARY KEY,
-                name TEXT NOT NULL,
-                category TEXT NOT NULL,
-                city TEXT NOT NULL,
-                target_count INTEGER DEFAULT 20,
-                price REAL DEFAULT 35.00,
-                template_style TEXT DEFAULT 'standard',
-                status TEXT DEFAULT 'pending',
-                leads_found INTEGER DEFAULT 0,
-                valid_emails INTEGER DEFAULT 0,
-                csv_path TEXT,
-                buyer_email TEXT,
-                stripe_url TEXT,
-                paypal_url TEXT,
-                bank_sort TEXT,
-                bank_account TEXT,
-                bank_ref TEXT,
-                created_at TEXT,
-                completed_at TEXT,
-                delivered_at TEXT
-            )
-        """)
-        await db.execute("""
-            CREATE TABLE IF NOT EXISTS outreach_log (
-                id TEXT PRIMARY KEY,
-                campaign_id TEXT NOT NULL,
-                lead_email TEXT NOT NULL,
-                subject TEXT,
-                status TEXT DEFAULT 'queued',
-                sent_at TEXT,
-                opened_at TEXT,
-                clicked_at TEXT,
-                FOREIGN KEY (campaign_id) REFERENCES campaigns(id)
-            )
-        """)
+    import logging
+    logger = logging.getLogger("scrapetra.db")
+    try:
+        pool = await _get_pool()
+        async with pool.acquire() as db:
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS searches (
+                    id TEXT PRIMARY KEY,
+                    keyword TEXT NOT NULL,
+                    count INTEGER NOT NULL,
+                    status TEXT DEFAULT 'pending',
+                    created_at TEXT,
+                    completed_at TEXT
+                )
+            """)
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS leads (
+                    id TEXT PRIMARY KEY,
+                    search_id TEXT NOT NULL,
+                    company_name TEXT,
+                    company_url TEXT,
+                    email TEXT,
+                    email_valid INTEGER DEFAULT 0,
+                    domain_valid INTEGER DEFAULT 0,
+                    FOREIGN KEY (search_id) REFERENCES searches(id)
+                )
+            """)
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS payments (
+                    id TEXT PRIMARY KEY,
+                    search_id TEXT NOT NULL,
+                    stripe_session_id TEXT,
+                    paypal_order_id TEXT,
+                    amount INTEGER DEFAULT 0,
+                    currency TEXT DEFAULT 'GBP',
+                    status TEXT DEFAULT 'pending',
+                    created_at TEXT,
+                    FOREIGN KEY (search_id) REFERENCES searches(id)
+                )
+            """)
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS download_tokens (
+                    token TEXT PRIMARY KEY,
+                    search_id TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    expires_at TEXT NOT NULL,
+                    used INTEGER DEFAULT 0,
+                    FOREIGN KEY (search_id) REFERENCES searches(id)
+                )
+            """)
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS campaigns (
+                    id TEXT PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    category TEXT NOT NULL,
+                    city TEXT NOT NULL,
+                    target_count INTEGER DEFAULT 20,
+                    price REAL DEFAULT 35.00,
+                    template_style TEXT DEFAULT 'standard',
+                    status TEXT DEFAULT 'pending',
+                    leads_found INTEGER DEFAULT 0,
+                    valid_emails INTEGER DEFAULT 0,
+                    csv_path TEXT,
+                    buyer_email TEXT,
+                    stripe_url TEXT,
+                    paypal_url TEXT,
+                    bank_sort TEXT,
+                    bank_account TEXT,
+                    bank_ref TEXT,
+                    created_at TEXT,
+                    completed_at TEXT,
+                    delivered_at TEXT
+                )
+            """)
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS outreach_log (
+                    id TEXT PRIMARY KEY,
+                    campaign_id TEXT NOT NULL,
+                    lead_email TEXT NOT NULL,
+                    subject TEXT,
+                    status TEXT DEFAULT 'queued',
+                    sent_at TEXT,
+                    opened_at TEXT,
+                    clicked_at TEXT,
+                    FOREIGN KEY (campaign_id) REFERENCES campaigns(id)
+                )
+            """)
+    except Exception as e:
+        logger.error("Database initialization failed: %s", e)
 
 
 async def create_search(keyword: str, count: int) -> str:
