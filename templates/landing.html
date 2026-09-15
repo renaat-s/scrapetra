@@ -3,20 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ScrapeTra - B2B Lead Scraping Agent</title>
-  <meta name="description" content="Autonomous B2B lead scraping, verification & outreach. Get verified email leads delivered instantly.">
+  <title>ScrapeTra - B2B Lead Scraping Agent | Verified Email Leads on Demand</title>
+  <meta name="description" content="ScrapeTra is an autonomous B2B lead generation agent. Scrape, verify, and deliver fresh email leads with MX validation. Get 50 verified leads for £35.">
+  <meta name="keywords" content="B2B leads, lead scraping, email verification, MX validation, lead generation, sales leads UK">
+  <meta property="og:title" content="ScrapeTra - B2B Lead Scraping Agent">
+  <meta property="og:description" content="Autonomous B2B lead scraping, verification & outreach. Get verified email leads delivered instantly.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.scrapetra.com">
+  <meta property="og:image" content="https://www.scrapetra.com/static/scrapetra-logo.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ScrapeTra - B2B Lead Scraping Agent">
+  <meta name="twitter:description" content="Autonomous B2B lead scraping, verification & outreach.">
+  <meta name="twitter:image" content="https://www.scrapetra.com/static/scrapetra-logo.png">
+  <link rel="icon" type="image/png" href="/static/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Inter+Tight:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --base-950: #050505;
-      --base-900: #0a0a0a;
-      --base-800: #121212;
-      --brand-orange: #f97316;
+      --base-950: #030712;
+      --base-900: #0a0f1e;
+      --base-800: #111827;
+      --base-700: #1e293b;
+      --brand-blue: #3b82f6;
+      --brand-blue-light: #60a5fa;
+      --brand-blue-dark: #1e40af;
       --brand-teal: #14b8a6;
-      --grad-text: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
-      --glass-high: rgba(255, 255, 255, .02);
+      --grad-text: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
+      --glass-high: rgba(255, 255, 255, .03);
       --glass-blur: blur(24px) saturate(180%);
       --glass-border: 1px solid rgba(255, 255, 255, .06);
       --font-main: "Instrument Sans", system-ui, sans-serif;
@@ -27,6 +41,7 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
     html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
 
     body {
@@ -36,7 +51,7 @@
       color: var(--text-primary);
       background-color: var(--base-950);
       background-image:
-        radial-gradient(at 0% 0%, rgba(249,115,22,.05) 0px, transparent 50%),
+        radial-gradient(at 0% 0%, rgba(59,130,246,.08) 0px, transparent 50%),
         radial-gradient(at 100% 100%, rgba(20,184,166,.05) 0px, transparent 50%);
       min-height: 100vh;
     }
@@ -73,7 +88,7 @@
       justify-content: space-between;
       padding: 0 2.5rem;
       border-radius: 100px;
-      background: linear-gradient(135deg, rgba(20,184,166,.15), rgba(10,10,10,.7), rgba(249,115,22,.15));
+      background: linear-gradient(135deg, rgba(59,130,246,.12), rgba(10,15,30,.7), rgba(20,184,166,.08));
       -webkit-backdrop-filter: blur(12px) saturate(120%);
       backdrop-filter: blur(12px) saturate(120%);
       border: 1px solid rgba(255,255,255,.08);
@@ -81,7 +96,7 @@
       pointer-events: auto;
     }
     .logo { font-weight: 700; font-size: 1.1rem; letter-spacing: .1em; color: #fff; }
-    .logo span { color: var(--brand-orange); }
+    .logo span { color: var(--brand-blue); }
     .header-nav { display: flex; align-items: center; gap: 2.5rem; }
     .header-nav a {
       font-size: .9rem;
@@ -91,18 +106,18 @@
     }
     .header-nav a:hover { color: #fff; }
     .btn-dashboard {
-      color: var(--brand-orange) !important;
+      color: var(--brand-blue) !important;
       font-weight: 700 !important;
       padding: .6rem 1.4rem;
-      border: 1px solid var(--brand-orange);
+      border: 1px solid var(--brand-blue);
       border-radius: 100px;
-      background: rgba(249,115,22,.05);
+      background: rgba(59,130,246,.08);
       transition: all .3s cubic-bezier(.2,.8,.2,1);
     }
     .btn-dashboard:hover {
-      background: var(--brand-orange);
+      background: var(--brand-blue);
       color: #000 !important;
-      box-shadow: 0 0 20px rgba(249,115,22,.3);
+      box-shadow: 0 0 20px rgba(59,130,246,.3);
     }
 
     /* HERO */
@@ -121,10 +136,10 @@
       border-radius: 50%;
       pointer-events: none;
     }
-    .ambient-orb.orange {
+    .ambient-orb.blue {
       top: -25%;
       left: -25%;
-      background: radial-gradient(circle, rgba(249,115,22,.15) 0%, rgba(249,115,22,.05) 40%, transparent 70%);
+      background: radial-gradient(circle, rgba(59,130,246,.18) 0%, rgba(59,130,246,.06) 40%, transparent 70%);
     }
     .ambient-orb.teal {
       bottom: -25%;
@@ -141,6 +156,11 @@
       width: 90%;
       max-width: 1000px;
     }
+    .hero-logo {
+      max-width: 220px;
+      height: auto;
+      filter: drop-shadow(0 0 30px rgba(59,130,246,.3));
+    }
     .hero-badge {
       font-size: .75rem;
       font-weight: 700;
@@ -148,7 +168,7 @@
       border-radius: 100px;
       background: var(--base-900);
       border: var(--glass-border);
-      color: var(--brand-orange);
+      color: var(--brand-blue-light);
       letter-spacing: .1em;
       text-transform: uppercase;
     }
@@ -172,8 +192,8 @@
     .btn-primary {
       padding: 1.2rem 3rem;
       border-radius: 100px;
-      background: #fff;
-      color: #000;
+      background: var(--brand-blue);
+      color: #fff;
       font-weight: 700;
       font-size: 1.1rem;
       border: none;
@@ -182,10 +202,10 @@
       align-items: center;
       justify-content: center;
       min-width: 220px;
-      box-shadow: 0 10px 30px -10px rgba(255,255,255,.3);
+      box-shadow: 0 10px 30px -10px rgba(59,130,246,.4);
       transition: transform .3s cubic-bezier(.2,.8,.2,1);
     }
-    .btn-primary:hover { transform: scale(1.05); }
+    .btn-primary:hover { transform: scale(1.05); box-shadow: 0 15px 40px -10px rgba(59,130,246,.5); }
     .btn-ghost {
       background: rgba(255,255,255,.05);
       color: #fff;
@@ -216,7 +236,7 @@
     .stat-val {
       font-size: 2.5rem;
       font-weight: 700;
-      color: var(--brand-orange);
+      color: var(--brand-blue);
     }
     .stat-label {
       font-size: .85rem;
@@ -224,7 +244,7 @@
       font-family: var(--font-mono);
     }
 
-    /* SCROLL INDICATOR */
+    /* SCROLL */
     .scroll-indicator {
       position: absolute;
       bottom: 3rem;
@@ -238,7 +258,7 @@
     .scroll-line {
       width: 1px;
       height: 60px;
-      background: linear-gradient(to bottom, var(--brand-orange), transparent);
+      background: linear-gradient(to bottom, var(--brand-blue), transparent);
     }
 
     /* FEATURES */
@@ -273,7 +293,7 @@
       -webkit-backdrop-filter: var(--glass-blur);
       backdrop-filter: var(--glass-blur);
       border: var(--glass-border);
-      box-shadow: 0 10px 40px -10px rgba(0,0,0,.5), 0 0 1px rgba(255,255,255,.1), inset 0 0 20px rgba(255,255,255,.02);
+      box-shadow: 0 10px 40px -10px rgba(0,0,0,.5), inset 0 0 20px rgba(255,255,255,.02);
       padding: 3rem;
       position: relative;
       overflow: hidden;
@@ -282,21 +302,21 @@
     .bento-card:hover {
       transform: translateY(-8px) scale(1.01);
       background: rgba(255,255,255,.05);
-      box-shadow: 0 20px 60px -15px rgba(0,0,0,.6), 0 0 1px rgba(255,255,255,.2), 0 0 20px rgba(249,115,22,.05);
+      box-shadow: 0 20px 60px -15px rgba(0,0,0,.6), 0 0 20px rgba(59,130,246,.08);
     }
     .bento-card.span-full { grid-column: span 12; }
     .bento-icon {
       width: 50px;
       height: 50px;
       border-radius: 12px;
-      background: rgba(255,255,255,.05);
+      background: rgba(59,130,246,.1);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--brand-orange);
+      color: var(--brand-blue);
       font-size: 1.5rem;
       margin-bottom: 1.5rem;
-      border: var(--glass-border);
+      border: 1px solid rgba(59,130,246,.15);
     }
     .bento-card h3 {
       font-size: 1.8rem;
@@ -316,7 +336,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: radial-gradient(circle at center, rgba(249,115,22,.05) 0%, transparent 70%);
+      background: radial-gradient(circle at center, rgba(59,130,246,.05) 0%, transparent 70%);
       opacity: 0;
       transition: opacity .5s;
     }
@@ -349,7 +369,7 @@
       left: 15%;
       right: 15%;
       height: 2px;
-      background: linear-gradient(90deg, transparent, var(--brand-orange), var(--brand-teal), transparent);
+      background: linear-gradient(90deg, transparent, var(--brand-blue), var(--brand-teal), transparent);
       z-index: 0;
     }
     .step {
@@ -362,13 +382,13 @@
       height: 80px;
       border-radius: 50%;
       background: var(--base-800);
-      border: 2px solid var(--brand-orange);
+      border: 2px solid var(--brand-blue);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.5rem;
       font-weight: 700;
-      color: var(--brand-orange);
+      color: var(--brand-blue);
       margin: 0 auto 1.5rem;
     }
     .step h3 {
@@ -413,7 +433,7 @@
       left: 0;
       right: 0;
       height: 2px;
-      background: linear-gradient(90deg, var(--brand-orange), var(--brand-teal));
+      background: linear-gradient(90deg, var(--brand-blue), var(--brand-teal));
     }
     .price {
       font-size: 4rem;
@@ -430,11 +450,9 @@
       display: flex;
       flex-direction: column;
       gap: 1rem;
-      margin: 2rem 0;
+      margin: 2rem auto;
       text-align: left;
       max-width: 400px;
-      margin-left: auto;
-      margin-right: auto;
     }
     .pricing-feature {
       display: flex;
@@ -443,10 +461,7 @@
       color: var(--text-secondary);
       font-size: 1rem;
     }
-    .pricing-feature .check {
-      color: var(--brand-teal);
-      font-weight: 700;
-    }
+    .pricing-feature .check { color: var(--brand-teal); font-weight: 700; }
     .pricing-methods {
       display: flex;
       gap: 1.5rem;
@@ -482,6 +497,26 @@
       margin-right: auto;
     }
 
+    /* NANOCONE FOOTER */
+    .nanoclone-footer {
+      padding: 4rem 2rem;
+      text-align: center;
+    }
+    .nanoclone-footer img {
+      max-width: 400px;
+      width: 80%;
+      height: auto;
+      opacity: .8;
+      transition: opacity .3s;
+    }
+    .nanoclone-footer img:hover { opacity: 1; }
+    .nanoclone-footer p {
+      color: var(--text-muted);
+      font-size: .85rem;
+      margin-top: 1rem;
+      font-family: var(--font-mono);
+    }
+
     /* FOOTER */
     .footer {
       padding: 5rem 2rem 3rem;
@@ -511,7 +546,7 @@
       font-family: var(--font-mono);
       font-size: .7rem;
       font-weight: 700;
-      color: var(--brand-orange);
+      color: var(--brand-blue);
       letter-spacing: .2em;
       text-transform: uppercase;
     }
@@ -541,6 +576,7 @@
       .header-nav a:not(.btn-dashboard) { display: none; }
       .footer-content { flex-direction: column; }
       .footer-links { gap: 3rem; }
+      .hero-logo { max-width: 160px; }
     }
   </style>
 </head>
@@ -561,9 +597,10 @@
 
   <!-- HERO -->
   <section class="hero">
-    <div class="ambient-orb orange"></div>
+    <div class="ambient-orb blue"></div>
     <div class="ambient-orb teal"></div>
     <div class="hero-content">
+      <img src="/static/scrapetra-logo.png" alt="ScrapeTra Logo" class="hero-logo">
       <div class="hero-badge">Autonomous Lead Intelligence</div>
       <h1>Scrape. Verify.<br> Sell. Repeat.</h1>
       <p class="hero-sub">ScrapeTra is an autonomous B2B lead generation agent that scrapes, verifies, and delivers fresh email leads on demand.</p>
@@ -688,6 +725,12 @@
     <a href="/dashboard" class="btn-primary">Open Dashboard</a>
   </section>
 
+  <!-- NANOCONE FOOTER IMAGE -->
+  <div class="nanoclone-footer">
+    <img src="/static/nanoclone-footer.png" alt="Nanoclone Systems">
+    <p>A Nanoclone Systems Product</p>
+  </div>
+
   <!-- FOOTER -->
   <footer class="footer">
     <div class="footer-content">
@@ -704,9 +747,9 @@
         </div>
         <div class="link-group">
           <span>Company</span>
-          <a href="https://nanoclone-systems-main.vercel.app/" target="_blank">Nanoclone Systems</a>
-          <a href="#">Terms of Service</a>
-          <a href="#">Privacy Policy</a>
+          <a href="https://nanoclone-systems-main.vercel.app/" target="_blank" rel="noopener">Nanoclone Systems</a>
+          <a href="/privacy">Privacy Policy</a>
+          <a href="/terms">Terms &amp; Conditions</a>
         </div>
       </div>
     </div>

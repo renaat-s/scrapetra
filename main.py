@@ -77,6 +77,33 @@ async def landing(request: Request):
     return templates.TemplateResponse("landing.html", {"request": request})
 
 
+@app.get("/privacy", response_class=HTMLResponse)
+async def privacy(request: Request):
+    return templates.TemplateResponse("privacy.html", {"request": request})
+
+
+@app.get("/terms", response_class=HTMLResponse)
+async def terms(request: Request):
+    return templates.TemplateResponse("terms.html", {"request": request})
+
+
+@app.get("/robots.txt", response_class=HTMLResponse)
+async def robots():
+    content = open(os.path.join(__dirname, "static", "robots.txt"), "r", encoding="utf-8").read()
+    return HTMLResponse(content, media_type="text/plain")
+
+
+@app.get("/sitemap.xml", response_class=HTMLResponse)
+async def sitemap():
+    content = open(os.path.join(__dirname, "static", "sitemap.xml"), "r", encoding="utf-8").read()
+    return HTMLResponse(content, media_type="application/xml")
+
+
+@app.exception_handler(404)
+async def not_found_handler(request: Request, exc):
+    return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
+
+
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request):
     return templates.TemplateResponse("dashboard.html", {
