@@ -66,7 +66,7 @@ ScrapeTra - Autonomous Lead Intelligence
     html = f"""<!DOCTYPE html>
 <html>
 <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-  <h2 style="color: #6366f1;">ScrapeTra Lead Data Delivery</h2>
+  <h2 style="color: #3b82f6;">ScrapeTra Lead Data Delivery</h2>
   <p>Your lead data from <strong>{campaign_name}</strong> is ready.</p>
   <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0;">
     <p><strong>Campaign:</strong> {campaign_name}</p>
@@ -75,7 +75,7 @@ ScrapeTra - Autonomous Lead Intelligence
   </div>
   <p>The CSV contains verified company names, URLs, and MX-validated email addresses.</p>
   <hr style="border: 1px solid #e5e7eb; margin: 20px 0;">
-  <p style="color: #6b7280; font-size: 12px;">ScrapeTra - Autonomous Lead Intelligence</p>
+  <p style="color: #6b7280; font-size: 12px;">Generated autonomously in 60 seconds by <a href="https://www.scrapetra.com" style="color: #3b82f6;">ScrapeTra</a>. Build your own list at <a href="https://www.scrapetra.com/dashboard" style="color: #3b82f6;">scrapetra.com</a></p>
 </body>
 </html>"""
 

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Free MX Record Checker - Verify Email Deliverability | ScrapeTra</title>
+  <meta name="description" content="Free MX record lookup tool. Check if an email domain has valid mail exchange records before sending. Instant DNS verification.">
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Inter+Tight:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --base-950: #030712;
+      --base-900: #0a0f1e;
+      --brand-blue: #3b82f6;
+      --brand-blue-light: #60a5fa;
+      --brand-teal: #14b8a6;
+      --font-main: "Instrument Sans", system-ui, sans-serif;
+      --font-mono: "Inter Tight", monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-main);
+      background: var(--base-950);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .tool-container {
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+    }
+    .logo { font-weight: 700; font-size: 1.1rem; letter-spacing: .1em; margin-bottom: 3rem; }
+    .logo span { color: var(--brand-blue); }
+    h1 {
+      font-size: clamp(1.8rem, 5vw, 2.5rem);
+      font-weight: 700;
+      letter-spacing: -.04em;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle {
+      color: rgba(255,255,255,.6);
+      font-size: 1.1rem;
+      margin-bottom: 3rem;
+    }
+    .input-group {
+      display: flex;
+      gap: 0;
+      margin-bottom: 2rem;
+    }
+    .input-group input {
+      flex: 1;
+      padding: 1rem 1.5rem;
+      border-radius: 100px 0 0 100px;
+      border: 1px solid rgba(255,255,255,.1);
+      border-right: none;
+      background: rgba(255,255,255,.05);
+      color: #fff;
+      font-size: 1rem;
+      font-family: var(--font-mono);
+      outline: none;
+      transition: border-color .3s;
+    }
+    .input-group input:focus { border-color: var(--brand-blue); }
+    .input-group input::placeholder { color: rgba(255,255,255,.3); }
+    .input-group button {
+      padding: 1rem 2rem;
+      border-radius: 0 100px 100px 0;
+      border: 1px solid var(--brand-blue);
+      background: var(--brand-blue);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all .3s;
+      white-space: nowrap;
+    }
+    .input-group button:hover { background: #2563eb; }
+    .input-group button:disabled { opacity: .5; cursor: not-allowed; }
+    .result {
+      text-align: left;
+      border-radius: 16px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.06);
+      padding: 1.5rem;
+      display: none;
+    }
+    .result.show { display: block; }
+    .result-header {
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+    }
+    .result-header.valid { color: var(--brand-teal); }
+    .result-header.invalid { color: #ef4444; }
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      padding: .75rem 0;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+      font-family: var(--font-mono);
+      font-size: .85rem;
+    }
+    .result-row:last-child { border-bottom: none; }
+    .result-row .label { color: rgba(255,255,255,.5); }
+    .result-row .value { color: #fff; }
+    .cta-box {
+      margin-top: 3rem;
+      padding: 2rem;
+      border-radius: 16px;
+      background: rgba(59,130,246,.08);
+      border: 1px solid rgba(59,130,246,.15);
+    }
+    .cta-box h3 {
+      font-size: 1.2rem;
+      margin-bottom: .5rem;
+      background: none;
+      -webkit-text-fill-color: #fff;
+    }
+    .cta-box p { color: rgba(255,255,255,.6); font-size: .95rem; margin-bottom: 1.5rem; }
+    .cta-box a {
+      display: inline-block;
+      padding: .8rem 2rem;
+      border-radius: 100px;
+      background: var(--brand-blue);
+      color: #fff;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all .3s;
+    }
+    .cta-box a:hover { transform: scale(1.05); box-shadow: 0 10px 30px -10px rgba(59,130,246,.4); }
+    .footer-link {
+      margin-top: 3rem;
+      color: rgba(255,255,255,.3);
+      font-size: .8rem;
+    }
+    .footer-link a { color: var(--brand-blue); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="tool-container">
+    <div class="logo">SCRAPE<span>TRA</span></div>
+    <h1>MX Record Checker</h1>
+    <p class="subtitle">Verify if a domain can receive email before you send.</p>
+
+    <div class="input-group">
+      <input type="text" id="domain-input" placeholder="Enter a domain (e.g. company.com)" autocomplete="off">
+      <button id="check-btn" onclick="checkMX()">Check MX</button>
+    </div>
+
+    <div class="result" id="result">
+      <div class="result-header" id="result-header"></div>
+      <div id="result-rows"></div>
+    </div>
+
+    <div class="cta-box">
+      <h3>Need verified B2B leads at scale?</h3>
+      <p>ScrapeTra scrapes, verifies, and delivers 50 MX-validated leads for just &pound;35.</p>
+      <a href="/dashboard">Get Started &rarr;</a>
+    </div>
+
+    <div class="footer-link">
+      <a href="/">&larr; Back to ScrapeTra</a>
+    </div>
+  </div>
+
+  <script>
+    const input = document.getElementById('domain-input');
+    const btn = document.getElementById('check-btn');
+    const result = document.getElementById('result');
+    const header = document.getElementById('result-header');
+    const rows = document.getElementById('result-rows');
+
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') checkMX(); });
+
+    async function checkMX() {
+      const domain = input.value.trim().replace(/^https?:\/\//, '').replace(/\/.*$/, '').replace(/^www\./, '');
+      if (!domain) return;
+
+      btn.disabled = true;
+      btn.textContent = 'Checking...';
+      result.classList.remove('show');
+
+      try {
+        const resp = await fetch(`/api/mx-check?domain=${encodeURIComponent(domain)}`);
+        const data = await resp.json();
+
+        if (data.valid) {
+          header.className = 'result-header valid';
+          header.innerHTML = '&#x2705; MX records found — this domain can receive email';
+        } else {
+          header.className = 'result-header invalid';
+          header.innerHTML = '&#x274C; No MX records — this domain cannot receive email';
+        }
+
+        let html = '';
+        if (data.mx_records && data.mx_records.length > 0) {
+          data.mx_records.forEach((mx, i) => {
+            html += `<div class="result-row"><span class="label">MX ${i+1}</span><span class="value">${mx}</span></div>`;
+          });
+        }
+        html += `<div class="result-row"><span class="label">Domain</span><span class="value">${data.domain}</span></div>`;
+        rows.innerHTML = html;
+        result.classList.add('show');
+      } catch (err) {
+        header.className = 'result-header invalid';
+        header.innerHTML = '&#x274C; Error checking domain';
+        rows.innerHTML = '';
+        result.classList.add('show');
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Check MX';
+    }
+  </script>
+</body>
+</html>

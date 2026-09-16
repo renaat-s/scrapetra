@@ -104,6 +104,29 @@ async def not_found_handler(request: Request, exc):
     return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
 
 
+@app.get("/tools/mx-check", response_class=HTMLResponse)
+async def mx_check_page(request: Request):
+    return templates.TemplateResponse("mx-check.html", {"request": request})
+
+
+@app.get("/api/mx-check")
+async def mx_check_api(domain: str = Query(...)):
+    import re as _re
+    domain = domain.strip().lower()
+    domain = _re.sub(r'^https?://', '', domain).replace('/', '').lstrip('www.')
+    if not _re.match(r'^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', domain):
+        raise HTTPException(status_code=400, detail="Invalid domain")
+
+    try:
+        import aiodns
+        resolver = aiodns.DNSResolver(timeout=5, tries=2)
+        result = await resolver.query_dns(domain, "MX")
+        mx_records = [r.host.rstrip('.') for r in result.answer]
+        return {"domain": domain, "valid": len(mx_records) > 0, "mx_records": mx_records}
+    except Exception:
+        return {"domain": domain, "valid": False, "mx_records": []}
+
+
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request):
     return templates.TemplateResponse("dashboard.html", {

@@ -48,9 +48,10 @@ def extract_emails_from_text(text: str) -> list[str]:
     seen = set()
     result = []
     junk_suffixes = (".png", ".jpg", ".gif", ".svg", ".css", ".js", ".ico", ".webp")
+    junk_prefixes = ("you@", "test@", "example@", "noreply@", "no-reply@", "donotreply@")
     for e in raw:
         e_lower = e.lower()
-        if e_lower not in seen and not e_lower.endswith(junk_suffixes):
+        if e_lower not in seen and not e_lower.endswith(junk_suffixes) and not e_lower.startswith(junk_prefixes):
             seen.add(e_lower)
             result.append(e_lower)
     return result
@@ -170,7 +171,7 @@ async def run_agent(keyword: str, desired_count: int) -> list[dict]:
                     "domain_valid": False,
                 })
 
-            await asyncio.sleep(random.uniform(0.5, 1.5))
+            await asyncio.sleep(random.uniform(2.0, 7.0))
 
     emails_to_check = [e["email"] for e in all_emails_to_verify]
     if emails_to_check:
