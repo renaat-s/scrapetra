@@ -112,16 +112,27 @@ async def mx_check_page(request: Request):
 @app.get("/api/mx-check")
 async def mx_check_api(domain: str = Query(...)):
     import re as _re
+    import subprocess
     domain = domain.strip().lower()
     domain = _re.sub(r'^https?://', '', domain).replace('/', '').lstrip('www.')
     if not _re.match(r'^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', domain):
         raise HTTPException(status_code=400, detail="Invalid domain")
 
     try:
-        import aiodns
-        resolver = aiodns.DNSResolver(timeout=5, tries=2)
-        result = await resolver.query_dns(domain, "MX")
-        mx_records = [r.host.rstrip('.') for r in result.answer]
+        proc = await asyncio.create_subprocess_exec(
+            "nslookup", "-type=MX", domain,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
+        output = stdout.decode("utf-8", errors="ignore")
+        mx_records = []
+        for line in output.splitlines():
+            line = line.strip()
+            if "mail exchanger" in line.lower():
+                parts = line.split("=", 1)
+                if len(parts) == 2:
+                    mx_records.append(parts[1].strip())
         return {"domain": domain, "valid": len(mx_records) > 0, "mx_records": mx_records}
     except Exception:
         return {"domain": domain, "valid": False, "mx_records": []}
