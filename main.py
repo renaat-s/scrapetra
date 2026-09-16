@@ -179,7 +179,9 @@ async def _run_campaign(
             bank_ref=f"ST-{campaign_id[:8].upper()}",
         )
     except Exception as e:
-        logger.error("Campaign %s failed: %s", campaign_id, e)
+        import traceback
+        tb = traceback.format_exc()
+        logger.error("Campaign %s failed: %s\n%s", campaign_id, e, tb)
         await update_campaign(campaign_id, status=f"error: {str(e)[:200]}")
 
 
