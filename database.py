@@ -49,9 +49,19 @@ async def init_db():
                     company_url TEXT,
                     email TEXT,
                     email_valid INTEGER DEFAULT 0,
-                    domain_valid INTEGER DEFAULT 0,
-                    FOREIGN KEY (search_id) REFERENCES searches(id)
+                    domain_valid INTEGER DEFAULT 0
                 )
+            """)
+            await db.execute("""
+                DO $$
+                BEGIN
+                    IF EXISTS (
+                        SELECT 1 FROM information_schema.table_constraints
+                        WHERE constraint_name = 'leads_search_id_fkey'
+                    ) THEN
+                        ALTER TABLE leads DROP CONSTRAINT leads_search_id_fkey;
+                    END IF;
+                END $$;
             """)
             await db.execute("""
                 CREATE TABLE IF NOT EXISTS payments (
@@ -62,8 +72,7 @@ async def init_db():
                     amount INTEGER DEFAULT 0,
                     currency TEXT DEFAULT 'GBP',
                     status TEXT DEFAULT 'pending',
-                    created_at TEXT,
-                    FOREIGN KEY (search_id) REFERENCES searches(id)
+                    created_at TEXT
                 )
             """)
             await db.execute("""
@@ -72,8 +81,7 @@ async def init_db():
                     search_id TEXT NOT NULL,
                     created_at TEXT NOT NULL,
                     expires_at TEXT NOT NULL,
-                    used INTEGER DEFAULT 0,
-                    FOREIGN KEY (search_id) REFERENCES searches(id)
+                    used INTEGER DEFAULT 0
                 )
             """)
             await db.execute("""
