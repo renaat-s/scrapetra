@@ -16,6 +16,7 @@
   <!-- NAV TABS -->
   <div class="tab-bar">
     <button class="tab active" onclick="showTab('search')">Quick Search</button>
+    <button class="tab" onclick="showTab('packages')">Packages</button>
     <button class="tab" onclick="showTab('campaigns')">Campaigns</button>
     <button class="tab" onclick="showTab('new-campaign')">New Campaign</button>
   </div>
@@ -78,6 +79,60 @@
       <div class="btn-row">
         <button class="green" onclick="openStripeCheckout()">Pay with Stripe</button>
         <button class="secondary" onclick="document.getElementById('payment-card').classList.add('hidden')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PACKAGES TAB -->
+  <div id="tab-packages" class="hidden">
+    <div class="card">
+      <h2>Scrape Lead Package</h2>
+      <p style="color:var(--text2);margin-bottom:16px">Scrape 50 verified B2B leads for a specific city. Packages are priced by region.</p>
+      <form id="package-scrape-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Region</label>
+            <select id="pkg-region" required onchange="updateRegionInfo()">
+              <option value="uk">United Kingdom (£35)</option>
+              <option value="us">United States ($45)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>City</label>
+            <select id="pkg-city" required></select>
+          </div>
+          <div class="form-group" style="flex:0 0 140px">
+            <label>API Key</label>
+            <input type="password" id="pkg-api-key" placeholder="scrapetra-demo-key-2026" required>
+          </div>
+        </div>
+        <div id="pkg-region-info" style="font-size:.85rem;color:var(--text2);margin-bottom:12px">
+          UK: 50 leads = £35 GBP | Scraping region: uk-en
+        </div>
+        <button type="submit" id="pkg-scrape-btn">Start Scraping</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Ready Packages</h2>
+      <div id="packages-list"></div>
+    </div>
+
+    <div class="card hidden" id="package-detail-card">
+      <h2 id="pd-title">Package Detail</h2>
+      <div id="pd-stats" style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px"></div>
+      <div style="overflow-x:auto">
+        <table class="results-table">
+          <thead>
+            <tr><th>Company</th><th>Email</th><th>Verified</th><th>MX OK</th><th>Source</th></tr>
+          </thead>
+          <tbody id="pd-leads-body"></tbody>
+        </table>
+      </div>
+      <div class="btn-row" style="margin-top:16px">
+        <button class="green" onclick="packageStripeCheckout()">Buy with Stripe</button>
+        <button onclick="packagePayPalCheckout()">Buy with PayPal</button>
+        <button class="secondary" onclick="document.getElementById('package-detail-card').classList.add('hidden')">Back</button>
       </div>
     </div>
   </div>
@@ -179,6 +234,7 @@ function showTab(name) {
   document.getElementById('tab-' + name).classList.remove('hidden');
   event.target.classList.add('active');
   if (name === 'campaigns') loadCampaigns();
+  if (name === 'packages') loadPackages();
 }
 
 // --- QUICK SEARCH ---
@@ -391,6 +447,115 @@ document.getElementById('campaign-form').addEventListener('submit', async (e) =>
     document.querySelectorAll('.tab')[1].click();
   } catch (e) { showToast('Launch failed'); btn.disabled = false; btn.textContent = 'Launch Campaign'; }
 });
+
+// --- PACKAGES ---
+const UK_CITIES = ["London","Birmingham","Manchester","Leeds","Glasgow","Liverpool","Bristol","Sheffield","Edinburgh","Leicester","Coventry","Bradford","Cardiff","Belfast","Nottingham"];
+const US_CITIES = ["New York","Los Angeles","Chicago","Houston","Phoenix","Philadelphia","San Antonio","San Diego","Dallas","San Jose","Austin","Jacksonville","Fort Worth","Columbus","Charlotte","San Francisco","Indianapolis","Seattle","Denver","Washington DC","Nashville","Oklahoma City","El Paso","Boston","Portland","Las Vegas","Memphis","Louisville","Baltimore","Milwaukee","Albuquerque","Tucson","Fresno","Mesa","Sacramento","Atlanta","Kansas City","Colorado Springs","Omaha","Raleigh","Miami","Long Beach","Virginia Beach","Oakland","Minneapolis","Tulsa","Tampa","Arlington","New Orleans","Detroit"];
+
+function updateRegionInfo() {
+  const region = document.getElementById('pkg-region').value;
+  const citySelect = document.getElementById('pkg-city');
+  const info = document.getElementById('pkg-region-info');
+  citySelect.innerHTML = '';
+  const cities = region === 'uk' ? UK_CITIES : US_CITIES;
+  cities.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; citySelect.appendChild(o); });
+  if (region === 'uk') { info.textContent = 'UK: 50 leads = £35 GBP | Scraping region: uk-en'; }
+  else { info.textContent = 'US: 50 leads = $45 USD | Scraping region: us-en'; }
+}
+updateRegionInfo();
+
+document.getElementById('package-scrape-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const region = document.getElementById('pkg-region').value;
+  const city = document.getElementById('pkg-city').value;
+  const apiKey = document.getElementById('pkg-api-key').value.trim();
+  if (!apiKey) return;
+  const btn = document.getElementById('pkg-scrape-btn');
+  btn.disabled = true; btn.textContent = 'Starting scrape...';
+  try {
+    const fd = new FormData(); fd.append('api_key', apiKey); fd.append('region', region); fd.append('city', city);
+    const res = await fetch('/api/packages/scrape', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) { showToast('Error: ' + (data.detail || 'Failed')); btn.disabled = false; btn.textContent = 'Start Scraping'; return; }
+    showToast('Scraping started for ' + city + '! Package ID: ' + data.package_id.slice(0, 8));
+    btn.disabled = false; btn.textContent = 'Start Scraping';
+    loadPackages();
+  } catch (e) { showToast('Scrape failed'); btn.disabled = false; btn.textContent = 'Start Scraping'; }
+});
+
+async function loadPackages() {
+  try {
+    const res = await fetch('/api/packages');
+    const data = await res.json();
+    const el = document.getElementById('packages-list');
+    if (!data.packages.length) { el.innerHTML = '<p style="color:var(--text2)">No packages yet. Scrape your first package above.</p>'; return; }
+    el.innerHTML = data.packages.map(p => {
+      const symbol = p.currency === 'USD' ? '$' : '£';
+      const statusClass = p.status === 'ready' ? 'yes' : p.status.startsWith('error') ? 'no' : 'na';
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="viewPackage('${p.id}')">
+        <div>
+          <strong>${esc(p.city)}, ${esc(p.country)}</strong>
+          <span class="meta"> | ${esc(p.region).toUpperCase()} | ${p.lead_count || 0} leads</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="count-badge">${symbol}${p.price}</span>
+          <span class="badge ${statusClass}">${p.status}</span>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) { showToast('Failed to load packages'); }
+}
+
+let activePackageId = null;
+
+async function viewPackage(id) {
+  activePackageId = id;
+  try {
+    const res = await fetch('/api/packages/' + id);
+    const data = await res.json();
+    const p = data.package;
+    const symbol = p.currency === 'USD' ? '$' : '£';
+    document.getElementById('pd-title').textContent = p.city + ', ' + p.country + ' Lead Package';
+    document.getElementById('pd-stats').innerHTML = `
+      <div class="stat-box"><div class="stat-val">${data.lead_count}</div><div class="stat-label">Total Leads</div></div>
+      <div class="stat-box"><div class="stat-val">${symbol}${p.price}</div><div class="stat-label">Price</div></div>
+      <div class="stat-box"><div class="stat-val">${esc(p.status)}</div><div class="stat-label">Status</div></div>
+      <div class="stat-box"><div class="stat-val">${esc(p.region).toUpperCase()}</div><div class="stat-label">Region</div></div>`;
+
+    const tbody = document.getElementById('pd-leads-body');
+    tbody.innerHTML = '';
+    data.leads.forEach(l => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td><strong>${esc(l.company_name)}</strong><br><small style="color:var(--text2)">${esc(l.company_url)}</small></td>
+        <td>${l.email ? '<a class="link" href="mailto:'+esc(l.email)+'">'+esc(l.email)+'</a>' : '<span class="badge na">N/A</span>'}</td>
+        <td>${l.email_valid ? '<span class="badge yes">Yes</span>' : '<span class="badge no">No</span>'}</td>
+        <td>${l.domain_valid ? '<span class="badge yes">Yes</span>' : '<span class="badge no">No</span>'}</td>
+        <td><a class="link" href="${esc(l.company_url)}" target="_blank">Visit</a></td>`;
+      tbody.appendChild(tr);
+    });
+    document.getElementById('package-detail-card').classList.remove('hidden');
+  } catch (e) { showToast('Failed to load package'); }
+}
+
+async function packageStripeCheckout() {
+  if (!activePackageId) return;
+  try {
+    const res = await fetch('/api/packages/' + activePackageId + '/checkout-stripe', { method: 'POST' });
+    const data = await res.json();
+    if (data.url) window.location.href = data.url;
+    else showToast('Checkout failed');
+  } catch (e) { showToast('Payment error'); }
+}
+
+async function packagePayPalCheckout() {
+  if (!activePackageId) return;
+  try {
+    const res = await fetch('/api/packages/' + activePackageId + '/checkout-paypal', { method: 'POST' });
+    const data = await res.json();
+    if (data.approve_url) window.location.href = data.approve_url;
+    else showToast('Checkout failed');
+  } catch (e) { showToast('Payment error'); }
+}
 
 {% if payment_success %}
 window.addEventListener('load', async () => {

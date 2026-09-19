@@ -79,6 +79,30 @@ async def landing(request: Request):
     return templates.TemplateResponse("landing.html", {"request": request})
 
 
+@app.get("/leads/{region}/{city_slug}", response_class=HTMLResponse)
+async def lead_package_page(request: Request, region: str, city_slug: str):
+    if region not in REGIONS:
+        raise HTTPException(status_code=404, detail="Region not found")
+
+    region_cfg = REGIONS[region]
+    city_name = city_slug.replace("-", " ").title()
+
+    country = "United Kingdom" if region == "uk" else "United States"
+
+    return templates.TemplateResponse("lead-package.html", {
+        "request": request,
+        "region": region,
+        "region_upper": region.upper(),
+        "city_slug": city_slug,
+        "city": city_name,
+        "country": country,
+        "currency": region_cfg["currency"],
+        "symbol": region_cfg["symbol"],
+        "price": f"{region_cfg['price']:.0f}",
+        "lead_count": PACKAGE_LEAD_COUNT,
+    })
+
+
 @app.get("/privacy", response_class=HTMLResponse)
 async def privacy(request: Request):
     return templates.TemplateResponse("privacy.html", {"request": request})

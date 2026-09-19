@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buy {{ lead_count }} Verified B2B Leads in {{ city }}, {{ country }} | ScrapeTra</title>
+  <meta name="description" content="Get {{ lead_count }} verified B2B email leads in {{ city }}, {{ country }}. MX-validated, syntax-checked. Instant CSV delivery. {{ symbol }}{{ price }} per package.">
+  <meta name="keywords" content="B2B leads {{ city }}, email lists {{ city }}, lead generation {{ city }}, {{ city }} business contacts, buy leads {{ city }}">
+  <meta property="og:title" content="{{ lead_count }} Verified B2B Leads in {{ city }}, {{ country }} | ScrapeTra">
+  <meta property="og:description" content="MX-verified B2B leads in {{ city }}. Instant CSV delivery for {{ symbol }}{{ price }}.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.scrapetra.com/leads/{{ region }}/{{ city_slug }}">
+  <meta property="og:image" content="https://www.scrapetra.com/static/scrapetra-logo.png">
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Inter+Tight:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --base-950: #030712; --base-900: #0a0f1e; --base-800: #111827;
+      --brand-blue: #3b82f6; --brand-blue-light: #60a5fa; --brand-teal: #14b8a6;
+      --grad-text: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
+      --glass-high: rgba(255,255,255,.03); --glass-blur: blur(24px) saturate(180%);
+      --glass-border: 1px solid rgba(255,255,255,.06);
+      --font-main: "Instrument Sans", system-ui, sans-serif;
+      --font-mono: "Inter Tight", monospace;
+      --text-primary: #ffffff; --text-secondary: rgba(255,255,255,.6); --text-muted: rgba(255,255,255,.3);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+    body {
+      font-family: var(--font-main); line-height: 1.5; color: var(--text-primary);
+      background-color: var(--base-950);
+      background-image: radial-gradient(at 0% 0%, rgba(59,130,246,.08) 0px, transparent 50%),
+                        radial-gradient(at 100% 100%, rgba(20,184,166,.05) 0px, transparent 50%);
+      min-height: 100vh;
+    }
+    h1, h2, h3 { font-weight: 700; letter-spacing: -.04em; background: var(--grad-text); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    a { text-decoration: none; color: inherit; }
+
+    .header { position: fixed; top: 2rem; left: 0; width: 100%; z-index: 1000; display: flex; justify-content: center; padding: 0 2rem; pointer-events: none; }
+    .header-container {
+      width: 100%; max-width: 1400px; height: 64px; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2.5rem; border-radius: 100px;
+      background: linear-gradient(135deg, rgba(59,130,246,.12), rgba(10,15,30,.7), rgba(20,184,166,.08));
+      -webkit-backdrop-filter: blur(12px) saturate(120%); backdrop-filter: blur(12px) saturate(120%);
+      border: 1px solid rgba(255,255,255,.08); box-shadow: 0 10px 40px -10px rgba(0,0,0,.5);
+      pointer-events: auto;
+    }
+    .logo { font-weight: 700; font-size: 1.1rem; letter-spacing: .1em; color: #fff; }
+    .logo span { color: var(--brand-blue); }
+    .header-nav { display: flex; align-items: center; gap: 2.5rem; }
+    .header-nav a { font-size: .9rem; font-weight: 500; color: rgba(255,255,255,.6); transition: all .3s; }
+    .header-nav a:hover { color: #fff; }
+    .btn-dashboard {
+      color: var(--brand-blue) !important; font-weight: 700 !important; padding: .6rem 1.4rem;
+      border: 1px solid var(--brand-blue); border-radius: 100px; background: rgba(59,130,246,.08); transition: all .3s;
+    }
+    .btn-dashboard:hover { background: var(--brand-blue); color: #000 !important; box-shadow: 0 0 20px rgba(59,130,246,.3); }
+
+    .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+    .ambient-orb { position: absolute; width: 90vw; height: 90vw; border-radius: 50%; pointer-events: none; }
+    .ambient-orb.blue { top: -25%; left: -25%; background: radial-gradient(circle, rgba(59,130,246,.18) 0%, rgba(59,130,246,.06) 40%, transparent 70%); }
+    .ambient-orb.teal { bottom: -25%; right: -25%; background: radial-gradient(circle, rgba(20,184,166,.12) 0%, rgba(20,184,166,.04) 40%, transparent 70%); }
+    .hero-content { z-index: 10; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 2rem; width: 90%; max-width: 900px; padding-top: 6rem; }
+    .hero-badge {
+      font-size: .75rem; font-weight: 700; padding: .4rem 1rem; border-radius: 100px;
+      background: var(--base-900); border: var(--glass-border); color: var(--brand-blue-light);
+      letter-spacing: .1em; text-transform: uppercase;
+    }
+    .hero h1 { font-size: clamp(2.2rem, 7vw, 4.5rem); line-height: 1.15; }
+    .hero-sub { font-size: 1.15rem; color: rgba(255,255,255,.6); font-family: var(--font-mono); max-width: 650px; }
+    .hero-cta { display: flex; gap: 1.5rem; margin-top: 1rem; flex-wrap: wrap; justify-content: center; }
+    .btn-primary {
+      padding: 1.2rem 3rem; border-radius: 100px; background: var(--brand-blue); color: #fff;
+      font-weight: 700; font-size: 1.1rem; border: none; cursor: pointer; display: inline-flex;
+      align-items: center; justify-content: center; min-width: 220px;
+      box-shadow: 0 10px 30px -10px rgba(59,130,246,.4); transition: transform .3s;
+    }
+    .btn-primary:hover { transform: scale(1.05); box-shadow: 0 15px 40px -10px rgba(59,130,246,.5); }
+    .btn-ghost {
+      background: rgba(255,255,255,.05); color: #fff; font-weight: 600; padding: 1.2rem 3rem;
+      border: 1px solid rgba(255,255,255,.1); border-radius: 100px; transition: all .3s;
+      display: inline-flex; align-items: center; justify-content: center; min-width: 220px;
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,.1); border-color: #fff; }
+
+    .stats { display: flex; gap: 4rem; margin-top: 3rem; flex-wrap: wrap; justify-content: center; }
+    .stat { text-align: center; }
+    .stat-val { font-size: 2.5rem; font-weight: 700; color: var(--brand-blue); }
+    .stat-label { font-size: .85rem; color: var(--text-secondary); font-family: var(--font-mono); }
+
+    .pricing-section { padding: 8rem 2rem; max-width: 800px; margin: 0 auto; text-align: center; }
+    .pricing-section h2 { font-size: clamp(2rem, 5vw, 3rem); margin-bottom: 1rem; }
+    .pricing-card {
+      border-radius: 32px; background: var(--glass-high); -webkit-backdrop-filter: var(--glass-blur);
+      backdrop-filter: var(--glass-blur); border: var(--glass-border);
+      box-shadow: 0 10px 40px -10px rgba(0,0,0,.5); padding: 4rem; margin-top: 3rem; position: relative; overflow: hidden;
+    }
+    .pricing-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--brand-blue), var(--brand-teal)); }
+    .price { font-size: 4rem; font-weight: 700; color: #fff; }
+    .price span { font-size: 1.5rem; color: var(--text-secondary); }
+    .pricing-desc { color: var(--text-secondary); font-size: 1.1rem; margin: 1rem 0 2rem; }
+    .pricing-features { display: flex; flex-direction: column; gap: 1rem; margin: 2rem auto; text-align: left; max-width: 400px; }
+    .pricing-feature { display: flex; align-items: center; gap: .75rem; color: var(--text-secondary); font-size: 1rem; }
+    .pricing-feature .check { color: var(--brand-teal); font-weight: 700; }
+
+    .features { padding: 6rem 2rem; max-width: 1200px; margin: 0 auto; }
+    .bento-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; }
+    .bento-card {
+      grid-column: span 6; border-radius: 32px; background: var(--glass-high);
+      -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+      border: var(--glass-border); box-shadow: 0 10px 40px -10px rgba(0,0,0,.5);
+      padding: 2.5rem; position: relative; overflow: hidden; transition: all .4s;
+    }
+    .bento-card:hover { transform: translateY(-4px); background: rgba(255,255,255,.05); }
+    .bento-card.span-full { grid-column: span 12; }
+    .bento-icon {
+      width: 44px; height: 44px; border-radius: 12px; background: rgba(59,130,246,.1);
+      display: flex; align-items: center; justify-content: center; color: var(--brand-blue);
+      font-size: 1.3rem; margin-bottom: 1rem; border: 1px solid rgba(59,130,246,.15);
+    }
+    .bento-card h3 { font-size: 1.4rem; margin-bottom: .75rem; background: none; -webkit-text-fill-color: #fff; color: #fff; }
+    .bento-card p { color: var(--text-secondary); font-size: .95rem; line-height: 1.7; }
+
+    .footer { padding: 4rem 2rem; text-align: center; background: var(--base-900); border-top: var(--glass-border); }
+    .footer p { color: var(--text-muted); font-size: .85rem; font-family: var(--font-mono); }
+    .footer a { color: var(--brand-blue); }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2.5rem; }
+      .stats { gap: 2rem; }
+      .bento-card { grid-column: span 12 !important; }
+      .header-nav { gap: 1rem; }
+      .header-nav a:not(.btn-dashboard) { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-container">
+      <div class="logo">SCRAPE<span>TRA</span></div>
+      <div class="header-nav">
+        <a href="/#features">Features</a>
+        <a href="/#pricing">Pricing</a>
+        <a href="/dashboard" class="btn-dashboard">Open Dashboard</a>
+      </div>
+    </div>
+  </div>
+
+  <section class="hero">
+    <div class="ambient-orb blue"></div>
+    <div class="ambient-orb teal"></div>
+    <div class="hero-content">
+      <div class="hero-badge">{{ region_upper }} Lead Package</div>
+      <h1>{{ lead_count }} Verified B2B Leads<br>in {{ city }}, {{ country }}</h1>
+      <p class="hero-sub">Freshly scraped, MX-validated email leads for {{ city }}. Delivered as CSV within 60 seconds of payment.</p>
+      <div class="hero-cta">
+        <a href="#pricing" class="btn-primary">Buy for {{ symbol }}{{ price }}</a>
+        <a href="/dashboard" class="btn-dashboard" style="padding:1.2rem 3rem;min-width:220px;text-align:center">Scrape Your Own</a>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="stat-val">{{ lead_count }}</div><div class="stat-label">Verified Leads</div></div>
+        <div class="stat"><div class="stat-val">60s</div><div class="stat-label">Delivery Speed</div></div>
+        <div class="stat"><div class="stat-val">100%</div><div class="stat-label">MX Verified</div></div>
+        <div class="stat"><div class="stat-val">{{ symbol }}{{ price }}</div><div class="stat-label">One-Time Price</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <div class="bento-grid">
+      <div class="bento-card">
+        <div class="bento-icon">&#x1F50D;</div>
+        <h3>Live Scraped Data</h3>
+        <p>Every lead was scraped live from public business directories and websites in {{ city }}. No recycled or outdated lists.</p>
+      </div>
+      <div class="bento-card">
+        <div class="bento-icon">&#x2705;</div>
+        <h3>MX Verified Emails</h3>
+        <p>Each email is syntax-checked and MX-record verified against DNS. Zero bounces, maximum deliverability.</p>
+      </div>
+      <div class="bento-card">
+        <div class="bento-icon">&#x26A1;</div>
+        <h3>Instant Delivery</h3>
+        <p>Receive your CSV within 60 seconds of payment. No waiting, no manual processing.</p>
+      </div>
+      <div class="bento-card">
+        <div class="bento-icon">&#x1F4B0;</div>
+        <h3>Secure Payment</h3>
+        <p>Pay via Stripe (card) or PayPal. Your payment is processed securely and instantly.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="pricing-section" id="pricing">
+    <h2>Get Your {{ city }} Lead Package</h2>
+    <p style="color:var(--text-secondary);font-size:1.1rem;">{{ lead_count }} verified B2B contacts in {{ city }}, {{ country }}</p>
+    <div class="pricing-card">
+      <div class="price">{{ symbol }}{{ price }} <span>/ package</span></div>
+      <p class="pricing-desc">{{ lead_count }} verified {{ city }} business leads with MX-validated emails</p>
+      <div class="pricing-features">
+        <div class="pricing-feature"><span class="check">&#x2713;</span> Company name &amp; website URL</div>
+        <div class="pricing-feature"><span class="check">&#x2713;</span> Verified email address</div>
+        <div class="pricing-feature"><span class="check">&#x2713;</span> MX record validation status</div>
+        <div class="pricing-feature"><span class="check">&#x2713;</span> Instant CSV delivery</div>
+        <div class="pricing-feature"><span class="check">&#x2713;</span> 60-second turnaround</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <p>&copy; 2026 ScrapeTra. All rights reserved. | <a href="/privacy">Privacy</a> | <a href="/terms">Terms</a></p>
+    <p style="margin-top:.5rem">A Nanoclone Systems Product</p>
+  </div>
+</body>
+</html>
