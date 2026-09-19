@@ -30,3 +30,30 @@ BANK_ACCOUNT = os.getenv("SCRAPETRA_BANK_ACCOUNT", "02337157")
 BANK_NAME = os.getenv("SCRAPETRA_BANK_NAME", "SANTANDER UK")
 
 DEFAULT_LEAD_PRICE = float(os.getenv("SCRAPETRA_LEAD_PRICE", "35.00"))
+
+REGIONS = {
+    "uk": {"region_code": "uk-en", "currency": "GBP", "symbol": "£", "price": 35.00},
+    "us": {"region_code": "us-en", "currency": "USD", "symbol": "$", "price": 45.00},
+}
+
+SCRAPE_TARGETS = {
+    "uk": [
+        "London", "Birmingham", "Manchester", "Leeds", "Glasgow",
+        "Liverpool", "Bristol", "Sheffield", "Edinburgh", "Leicester",
+        "Coventry", "Bradford", "Cardiff", "Belfast", "Nottingham",
+    ],
+    "us": [
+        "New York", "Los Angeles", "Chicago", "Houston", "Phoenix",
+        "Philadelphia", "San Antonio", "San Diego", "Dallas", "San Jose",
+        "Austin", "Jacksonville", "Fort Worth", "Columbus", "Charlotte",
+        "San Francisco", "Indianapolis", "Seattle", "Denver", "Washington DC",
+        "Nashville", "Oklahoma City", "El Paso", "Boston", "Portland",
+        "Las Vegas", "Memphis", "Louisville", "Baltimore", "Milwaukee",
+        "Albuquerque", "Tucson", "Fresno", "Mesa", "Sacramento",
+        "Atlanta", "Kansas City", "Colorado Springs", "Omaha", "Raleigh",
+        "Miami", "Long Beach", "Virginia Beach", "Oakland", "Minneapolis",
+        "Tulsa", "Tampa", "Arlington", "New Orleans", "Detroit",
+    ],
+}
+
+PACKAGE_LEAD_COUNT = 50

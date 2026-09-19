@@ -57,10 +57,10 @@ def extract_emails_from_text(text: str) -> list[str]:
     return result
 
 
-def _ddg_search_sync(keyword: str, max_results: int) -> list[dict]:
+def _ddg_search_sync(keyword: str, max_results: int, region: str = "uk-en") -> list[dict]:
     results = []
     with DDGS() as ddgs:
-        for r in ddgs.text(keyword, max_results=max_results):
+        for r in ddgs.text(keyword, max_results=max_results, region=region):
             results.append({
                 "title": r.get("title", ""),
                 "url": r.get("href", ""),
@@ -69,8 +69,8 @@ def _ddg_search_sync(keyword: str, max_results: int) -> list[dict]:
     return results
 
 
-async def search_web(keyword: str, max_results: int = 10) -> list[dict]:
-    return await asyncio.to_thread(_ddg_search_sync, keyword, max_results)
+async def search_web(keyword: str, max_results: int = 10, region: str = "uk-en") -> list[dict]:
+    return await asyncio.to_thread(_ddg_search_sync, keyword, max_results, region)
 
 
 async def scrape_company_page(url: str, client: httpx.AsyncClient) -> dict:
@@ -124,8 +124,8 @@ async def _verify_single(email: str) -> dict:
     return {"email": email, "syntax": syntax_ok, "mx_valid": mx_ok}
 
 
-async def run_agent(keyword: str, desired_count: int) -> list[dict]:
-    search_results = await search_web(keyword, max_results=min(desired_count * 2, 30))
+async def run_agent(keyword: str, desired_count: int, region: str = "uk-en") -> list[dict]:
+    search_results = await search_web(keyword, max_results=min(desired_count * 2, 30), region=region)
 
     leads = []
     seen_domains = set()

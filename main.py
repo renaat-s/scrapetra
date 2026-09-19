@@ -19,6 +19,7 @@ from config import (
     STRIPE_WEBHOOK_SECRET, ALLOWED_ORIGINS,
     PAYPAL_CLIENT_ID, BANK_SORT_CODE, BANK_ACCOUNT,
     DEFAULT_LEAD_PRICE, SENDER_NAME,
+    REGIONS, SCRAPE_TARGETS, PACKAGE_LEAD_COUNT,
 )
 from database import (
     init_db, create_search, update_search_status, insert_leads,
@@ -27,6 +28,7 @@ from database import (
     validate_download_token, is_search_paid,
     create_campaign, update_campaign, get_campaign, get_all_campaigns,
     log_outreach, update_outreach_status, get_outreach_logs,
+    create_package, update_package, get_package, get_packages, get_ready_packages,
 )
 from agent import run_agent
 from stripe_pay import create_checkout_session, verify_webhook
@@ -305,11 +307,22 @@ async def campaign_stripe_checkout(campaign_id: str, request: Request):
         raise HTTPException(status_code=404, detail="Campaign not found")
 
     origin = str(request.base_url).rstrip("/")
-    result = create_checkout_session(campaign_id, origin)
+
+    region = campaign.get("region", "uk")
+    region_cfg = REGIONS.get(region, REGIONS["uk"])
+    currency = region_cfg["currency"].lower()
+    amount = int(campaign["price"] * 100)
+
+    result = create_checkout_session(
+        campaign_id, origin,
+        currency=currency,
+        amount=amount,
+        product_name=f"ScrapeTra: {campaign['name']} - {campaign['valid_emails']} verified leads",
+    )
     if "error" in result:
         raise HTTPException(status_code=400, detail=result["error"])
 
-    await create_payment(campaign_id, result["session_id"], int(campaign["price"] * 100))
+    await create_payment(campaign_id, result["session_id"], amount, region_cfg["currency"])
     return {"url": result["url"], "session_id": result["session_id"]}
 
 
@@ -320,11 +333,15 @@ async def campaign_paypal_checkout(campaign_id: str, request: Request):
         raise HTTPException(status_code=404, detail="Campaign not found")
 
     origin = str(request.base_url).rstrip("/")
+
+    region = campaign.get("region", "uk")
+    region_cfg = REGIONS.get(region, REGIONS["uk"])
+    currency = region_cfg["currency"]
     amount = f"{campaign['price']:.2f}"
 
     result = create_paypal_order(
         amount=amount,
-        currency="GBP",
+        currency=currency,
         search_id=campaign_id,
         origin=origin,
         description=f"ScrapeTra: {campaign['name']} - {campaign['valid_emails']} verified leads",
@@ -333,7 +350,7 @@ async def campaign_paypal_checkout(campaign_id: str, request: Request):
     if "error" in result:
         raise HTTPException(status_code=400, detail=result["error"])
 
-    await create_payment(campaign_id, "", int(campaign["price"] * 100), "GBP")
+    await create_payment(campaign_id, "", int(campaign["price"] * 100), currency)
     return {"approve_url": result["approve_url"], "order_id": result["order_id"]}
 
 
@@ -342,6 +359,7 @@ async def start_search(
     request: Request,
     keyword: str = Form(...),
     count: int = Form(10),
+    region: str = Form("uk-en"),
     api_key: str = Form(""),
 ):
     client_ip = request.client.host if request.client else "unknown"
@@ -352,14 +370,14 @@ async def start_search(
 
     count = max(1, min(count, 100))
     search_id = await create_search(keyword, count)
-    asyncio.create_task(_run_search_agent(search_id, keyword, count))
+    asyncio.create_task(_run_search_agent(search_id, keyword, count, region))
     return JSONResponse({"search_id": search_id, "status": "pending"})
 
 
-async def _run_search_agent(search_id: str, keyword: str, count: int):
+async def _run_search_agent(search_id: str, keyword: str, count: int, region: str = "uk-en"):
     try:
         await update_search_status(search_id, "running")
-        leads = await run_agent(keyword, count)
+        leads = await run_agent(keyword, count, region=region)
         await insert_leads(search_id, leads)
         await update_search_status(search_id, "completed")
     except Exception as e:
@@ -514,6 +532,158 @@ async def stripe_webhook(request: Request):
     return {"status": "ok"}
 
 
-if __name__ == "__main__":
+@app.get("/api/packages")
+async def list_packages(region: str = Query(""), status: str = Query("")):
+    packages = await get_packages(region=region, status=status)
+    return {"packages": packages, "count": len(packages)}
+
+
+@app.get("/api/packages/{package_id}")
+async def package_detail(package_id: str):
+    package = await get_package(package_id)
+    if not package:
+        raise HTTPException(status_code=404, detail="Package not found")
+    leads = await get_leads(package_id)
+    return {"package": package, "leads": leads, "lead_count": len(leads)}
+
+
+@app.post("/api/packages/scrape")
+async def scrape_package(
+    request: Request,
+    api_key: str = Form(...),
+    region: str = Form(...),
+    city: str = Form(...),
+):
+    if api_key != API_KEY:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    if region not in REGIONS:
+        raise HTTPException(status_code=400, detail=f"Invalid region. Use: {', '.join(REGIONS.keys())}")
+
+    client_ip = request.client.host if request.client else "unknown"
+    if not _check_rate_limit(f"package:{client_ip}"):
+        raise HTTPException(status_code=429, detail="Rate limit exceeded")
+
+    region_cfg = REGIONS[region]
+    keyword = f"businesses in {city}"
+    package_id = await create_package(
+        region=region,
+        city=city,
+        country="United Kingdom" if region == "uk" else "United States",
+        currency=region_cfg["currency"],
+        price=region_cfg["price"],
+        keyword=keyword,
+    )
+
+    asyncio.create_task(_run_package_scrape(
+        package_id, keyword, PACKAGE_LEAD_COUNT,
+        region_cfg["region_code"], region_cfg["currency"], region_cfg["price"],
+    ))
+
+    return JSONResponse({"package_id": package_id, "status": "scraping"})
+
+
+async def _run_package_scrape(
+    package_id: str, keyword: str, target_count: int,
+    region_code: str, currency: str, price: float,
+):
+    try:
+        leads = await run_agent(keyword, target_count, region=region_code)
+
+        valid_leads = [l for l in leads if l.get("email") and l.get("email_valid")]
+
+        await insert_leads(package_id, valid_leads)
+
+        csv_data = _generate_package_csv(valid_leads)
+        csv_path = os.path.join(__dirname, "exports", f"package_{package_id[:8]}.csv")
+        os.makedirs(os.path.dirname(csv_path), exist_ok=True)
+        with open(csv_path, "w", newline="", encoding="utf-8") as f:
+            f.write(csv_data)
+
+        await update_package(
+            package_id,
+            status="ready",
+            lead_count=len(valid_leads),
+            csv_path=csv_path,
+            completed_at=time.strftime("%Y-%m-%dT%H:%M:%S"),
+        )
+    except Exception as e:
+        import traceback
+        tb = traceback.format_exc()
+        logger.error("Package %s failed: %s\n%s", package_id, e, tb)
+        await update_package(package_id, status=f"error: {str(e)[:200]}")
+
+
+def _generate_package_csv(leads: list[dict]) -> str:
+    output = io.StringIO()
+    writer = csv.DictWriter(
+        output,
+        fieldnames=["company_name", "company_url", "email", "email_valid", "domain_valid"],
+    )
+    writer.writeheader()
+    for lead in leads:
+        writer.writerow({
+            "company_name": lead.get("company_name", ""),
+            "company_url": lead.get("company_url", ""),
+            "email": lead.get("email", ""),
+            "email_valid": "Yes" if lead.get("email_valid") else "No",
+            "domain_valid": "Yes" if lead.get("domain_valid") else "No",
+        })
+    return output.getvalue()
+
+
+@app.post("/api/packages/{package_id}/checkout-stripe")
+async def package_stripe_checkout(package_id: str, request: Request):
+    package = await get_package(package_id)
+    if not package:
+        raise HTTPException(status_code=404, detail="Package not found")
+    if package["status"] != "ready":
+        raise HTTPException(status_code=400, detail="Package not ready yet")
+
+    origin = str(request.base_url).rstrip("/")
+    currency = package["currency"].lower()
+    amount = int(package["price"] * 100)
+
+    result = create_checkout_session(
+        package_id, origin,
+        currency=currency,
+        amount=amount,
+        product_name=f"ScrapeTra: {package['city']} {package['country']} Lead Package ({package['lead_count']} leads)",
+    )
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+
+    await create_payment(package_id, result["session_id"], amount, package["currency"])
+    return {"url": result["url"], "session_id": result["session_id"]}
+
+
+@app.post("/api/packages/{package_id}/checkout-paypal")
+async def package_paypal_checkout(package_id: str, request: Request):
+    package = await get_package(package_id)
+    if not package:
+        raise HTTPException(status_code=404, detail="Package not found")
+    if package["status"] != "ready":
+        raise HTTPException(status_code=400, detail="Package not ready yet")
+
+    origin = str(request.base_url).rstrip("/")
+    currency = package["currency"]
+    amount = f"{package['price']:.2f}"
+
+    result = create_paypal_order(
+        amount=amount,
+        currency=currency,
+        search_id=package_id,
+        origin=origin,
+        description=f"ScrapeTra: {package['city']} {package['country']} Lead Package ({package['lead_count']} leads)",
+    )
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+
+    await create_payment(package_id, "", int(package["price"] * 100), currency)
+    return {"approve_url": result["approve_url"], "order_id": result["order_id"]}
+
+
+@app.get("/api/scrape-targets")
+async def scrape_targets():
+    return {"targets": SCRAPE_TARGETS, "regions": REGIONS}
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -121,6 +121,23 @@ async def init_db():
                     FOREIGN KEY (campaign_id) REFERENCES campaigns(id)
                 )
             """)
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS packages (
+                    id TEXT PRIMARY KEY,
+                    region TEXT NOT NULL,
+                    city TEXT NOT NULL,
+                    country TEXT NOT NULL,
+                    currency TEXT NOT NULL,
+                    price REAL NOT NULL,
+                    lead_count INTEGER DEFAULT 0,
+                    status TEXT DEFAULT 'scraping',
+                    csv_path TEXT,
+                    keyword TEXT,
+                    created_at TEXT,
+                    completed_at TEXT,
+                    sold_at TEXT
+                )
+            """)
     except Exception as e:
         logger.error("Database initialization failed: %s", e)
 
@@ -342,3 +359,68 @@ async def get_outreach_logs(campaign_id: str) -> list[dict]:
             campaign_id,
         )
         return [dict(row) for row in rows]
+
+
+async def create_package(
+    region: str, city: str, country: str, currency: str,
+    price: float, keyword: str = "",
+) -> str:
+    package_id = str(uuid.uuid4())
+    now = datetime.utcnow().isoformat()
+    pool = await _get_pool()
+    async with pool.acquire() as db:
+        await db.execute(
+            """INSERT INTO packages
+               (id, region, city, country, currency, price, status, keyword, created_at)
+               VALUES ($1, $2, $3, $4, $5, $6, 'scraping', $7, $8)""",
+            package_id, region, city, country, currency, price, keyword, now,
+        )
+    return package_id
+
+
+async def update_package(package_id: str, **kwargs):
+    allowed = {
+        "status", "lead_count", "csv_path", "completed_at", "sold_at",
+    }
+    updates = {k: v for k, v in kwargs.items() if k in allowed}
+    if not updates:
+        return
+    keys = list(updates.keys())
+    values = list(updates.values())
+    set_clause = ", ".join(f"{k} = ${i+1}" for i, k in enumerate(keys))
+    pool = await _get_pool()
+    async with pool.acquire() as db:
+        await db.execute(
+            f"UPDATE packages SET {set_clause} WHERE id = ${len(keys)+1}",
+            *values, package_id,
+        )
+
+
+async def get_package(package_id: str) -> dict | None:
+    pool = await _get_pool()
+    async with pool.acquire() as db:
+        row = await db.fetchrow("SELECT * FROM packages WHERE id = $1", package_id)
+        return dict(row) if row else None
+
+
+async def get_packages(
+    region: str = "", status: str = "", limit: int = 50
+) -> list[dict]:
+    pool = await _get_pool()
+    async with pool.acquire() as db:
+        query = "SELECT * FROM packages WHERE 1=1"
+        params = []
+        if region:
+            params.append(region)
+            query += f" AND region = ${len(params)}"
+        if status:
+            params.append(status)
+            query += f" AND status = ${len(params)}"
+        params.append(limit)
+        query += f" ORDER BY created_at DESC LIMIT ${len(params)}"
+        rows = await db.fetch(query, *params)
+        return [dict(row) for row in rows]
+
+
+async def get_ready_packages(region: str = "") -> list[dict]:
+    return await get_packages(region=region, status="ready")
