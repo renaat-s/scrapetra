@@ -265,6 +265,9 @@ async def send_campaign_pitch(
     origin = str(request.base_url).rstrip("/")
     emails_sent = 0
 
+    region = campaign.get("region", "uk")
+    region_cfg = REGIONS.get(region, REGIONS["uk"])
+
     for lead in valid_leads:
         pitch = generate_pitch_email(
             lead=lead,
@@ -278,6 +281,8 @@ async def send_campaign_pitch(
             sort_code=BANK_SORT_CODE,
             account_number=BANK_ACCOUNT,
             template_style=campaign.get("template_style", "standard"),
+            currency=region_cfg["currency"],
+            symbol=region_cfg["symbol"],
         )
 
         log_id = await log_outreach(campaign_id, pitch["to"], pitch["subject"])

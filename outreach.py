@@ -12,58 +12,86 @@ from agent import run_agent
 logger = logging.getLogger("scrapetra.outreach")
 
 OUTREACH_TEMPLATES = {
-    "standard": Template("""Subject: ${lead_count} verified ${category} leads in ${city} ready for you
+    "standard": Template("""Subject: Fresh ${lead_count} verified ${category} leads in ${city} — ready to buy
 
-Hey ${company_name},
+Hi,
 
-I'm ScrapeTra - an automated B2B lead generation agent. Today I scraped and verified ${lead_count} active ${category} leads in ${city}.
+ScrapeTra just completed a fresh scrape of ${category} businesses in ${city}. ${lead_count} companies, each with a syntax-verified, MX-validated email address.
 
-Every email is syntax-verified and MX-record confirmed - no bounced leads, no waste.
+This is live data — scraped today, not recycled from a stale database.
 
-The full CSV includes:
-- Company name & URL
+What's in the CSV:
+- Company name & website URL
 - Verified email address
 - MX record validation status
 
-Price: £${price}
+Price: ${symbol}${price} (one-time, no subscription)
 
-Pay instantly and receive the CSV within 60 seconds:
+Buy now and receive the CSV within 60 seconds:
 
 Stripe (Card): ${stripe_url}
 PayPal: ${paypal_url}
-Bank Transfer: Sort ${sort_code} | Acc ${account_number} | Ref: ${ref}
-
-Once payment clears, the CSV arrives in your inbox automatically.
+${bank_details}
+Every email was checked against DNS MX records before inclusion. Zero bounces guaranteed.
 
 ${sender_name}
-ScrapeTra - Autonomous Lead Intelligence
+ScrapeTra — Autonomous Lead Intelligence
+scrapetra.com
 """),
 
-    "premium": Template("""Subject: ${lead_count} exclusive ${category} contacts in ${city} - verified today
+    "premium": Template("""Subject: ${lead_count} exclusive ${category} contacts in ${city} — verified today
 
-Hi ${company_name},
+Hi,
 
-I'm reaching out because ScrapeTra (an autonomous B2B scraping agent) just completed a fresh batch of ${lead_count} verified ${category} leads in ${city}.
+I run ScrapeTra, an autonomous B2B lead generation agent. I just scraped and verified ${lead_count} ${category} leads in ${city}.
 
-This isn't recycled data. Every single record was:
-- Scraped live from public directories & websites
-- Cross-referenced against MX DNS records for deliverability
-- Syntax-validated for email accuracy
+Here's what makes this different from bought lists:
 
-Individually, these leads would cost you 3-5x through traditional data brokers.
+1. Scraped live from public business directories and company websites
+2. Every email syntax-checked and MX-verified against DNS records
+3. Zero recycled data — this was harvested today
 
-ScrapeTra's price: £${price} (one-time, no subscription)
+Traditional data brokers charge 3-5x more for worse data.
+
+ScrapeTra's price: ${symbol}${price} (one-time, no subscription)
 
 Get the full export now:
-- Stripe (instant): ${stripe_url}
-- PayPal: ${paypal_url}
-- UK Bank Transfer: Sort ${sort_code} | Acc ${account_number} | Ref: ${ref}
-
+Stripe (instant): ${stripe_url}
+PayPal: ${paypal_url}
+${bank_details}
 The CSV is delivered to your email within seconds of payment.
+
+If you sell to ${category} companies in ${city}, this saves you hours of manual prospecting.
 
 Best,
 ${sender_name}
-ScrapeTra - Autonomous Lead Intelligence
+ScrapeTra — Autonomous Lead Intelligence
+scrapetra.com
+"""),
+
+    "buyer-outreach": Template("""Subject: Fresh ${city} ${category} lead list — ${lead_count} verified contacts
+
+Hey,
+
+I noticed you work in B2B sales / lead generation. I wanted to share something that might help.
+
+ScrapeTra (my autonomous lead agent) just scraped ${lead_count} verified ${category} contacts in ${city}.
+
+Every record includes:
+- Company name & URL
+- Verified business email (MX-validated)
+- Deliverability status
+
+Price: ${symbol}${price} — instant CSV delivery.
+
+Stripe: ${stripe_url}
+PayPal: ${paypal_url}
+${bank_details}
+If you're prospecting in ${city}, this is the fastest way to get a clean list.
+
+${sender_name}
+ScrapeTra — Autonomous Lead Intelligence
+scrapetra.com
 """),
 }
 
@@ -113,21 +141,26 @@ def generate_pitch_email(
     sort_code: str = "",
     account_number: str = "",
     template_style: str = "standard",
+    currency: str = "GBP",
+    symbol: str = "\u00a3",
 ) -> dict:
     tmpl = OUTREACH_TEMPLATES.get(template_style, OUTREACH_TEMPLATES["standard"])
 
-    ref = f"ST-{datetime.utcnow().strftime('%Y%m%d')}-{lead.get('company_name', 'BIZ')[:8].upper()}"
+    ref = f"ST-{datetime.utcnow().strftime('%Y%m%d')}-{city[:8].upper()}"
+
+    bank_details = ""
+    if sort_code and account_number:
+        bank_details = f"Bank Transfer: Sort {sort_code} | Acc {account_number} | Ref: {ref}"
 
     body = tmpl.safe_substitute(
-        company_name=lead.get("company_name", "there"),
         lead_count=lead_count,
         category=category,
         city=city,
         price=f"{price:.2f}",
+        symbol=symbol,
         stripe_url=stripe_url or "#",
         paypal_url=paypal_url or "#",
-        sort_code=sort_code or "XXXXXX",
-        account_number=account_number or "XXXXXXXX",
+        bank_details=bank_details,
         ref=ref,
         sender_name=sender_name,
     )
