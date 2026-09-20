@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browse Lead Packages | ScrapeTra</title>
+  <meta name="description" content="Browse verified B2B lead packages. 50 MX-validated email leads per package. Instant CSV delivery.">
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Inter+Tight:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --base-950: #030712; --base-900: #0a0f1e; --base-800: #111827;
+      --brand-blue: #3b82f6; --brand-blue-light: #60a5fa; --brand-teal: #14b8a6;
+      --grad-text: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
+      --glass-bg: rgba(255,255,255,.03); --glass-blur: blur(24px) saturate(180%);
+      --glass-border: 1px solid rgba(255,255,255,.06);
+      --font-main: "Instrument Sans", system-ui, sans-serif;
+      --font-mono: "Inter Tight", monospace;
+      --text-primary: #ffffff; --text-secondary: rgba(255,255,255,.6); --text-muted: rgba(255,255,255,.3);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+    body {
+      font-family: var(--font-main); line-height: 1.5; color: var(--text-primary);
+      background-color: var(--base-950);
+      background-image: radial-gradient(at 0% 0%, rgba(59,130,246,.08) 0px, transparent 50%),
+                        radial-gradient(at 100% 100%, rgba(20,184,166,.05) 0px, transparent 50%);
+      min-height: 100vh;
+    }
+    h1, h2, h3 { font-weight: 700; letter-spacing: -.04em; background: var(--grad-text); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    a { text-decoration: none; color: inherit; }
+
+    .header { position: fixed; top: 2rem; left: 0; width: 100%; z-index: 1000; display: flex; justify-content: center; padding: 0 2rem; pointer-events: none; }
+    .header-container {
+      width: 100%; max-width: 1400px; height: 64px; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2.5rem; border-radius: 100px;
+      background: linear-gradient(135deg, rgba(59,130,246,.12), rgba(10,15,30,.7), rgba(20,184,166,.08));
+      -webkit-backdrop-filter: blur(12px) saturate(120%); backdrop-filter: blur(12px) saturate(120%);
+      border: 1px solid rgba(255,255,255,.08); box-shadow: 0 10px 40px -10px rgba(0,0,0,.5);
+      pointer-events: auto;
+    }
+    .logo { font-weight: 700; font-size: 1.1rem; letter-spacing: .1em; color: #fff; }
+    .logo span { color: var(--brand-blue); }
+    .header-nav { display: flex; align-items: center; gap: 2.5rem; }
+    .header-nav a { font-size: .9rem; font-weight: 500; color: rgba(255,255,255,.6); transition: all .3s; }
+    .header-nav a:hover { color: #fff; }
+    .btn-nav {
+      color: var(--brand-blue) !important; font-weight: 700 !important; padding: .6rem 1.4rem;
+      border: 1px solid var(--brand-blue); border-radius: 100px; background: rgba(59,130,246,.08); transition: all .3s;
+    }
+    .btn-nav:hover { background: var(--brand-blue); color: #000 !important; box-shadow: 0 0 20px rgba(59,130,246,.3); }
+
+    .page { max-width: 1200px; margin: 0 auto; padding: 8rem 2rem 4rem; }
+    .page-header { text-align: center; margin-bottom: 3rem; }
+    .page-header h1 { font-size: clamp(2rem, 5vw, 3rem); margin-bottom: .75rem; }
+    .page-header p { color: var(--text-secondary); font-size: 1.1rem; }
+
+    .filter-bar { display: flex; gap: .75rem; justify-content: center; margin-bottom: 3rem; flex-wrap: wrap; }
+    .filter-btn {
+      padding: .6rem 1.5rem; border-radius: 100px; border: var(--glass-border);
+      background: rgba(255,255,255,.03); color: var(--text-secondary); font-size: .85rem;
+      font-weight: 600; cursor: pointer; transition: all .3s; font-family: var(--font-main);
+    }
+    .filter-btn:hover { background: rgba(255,255,255,.06); color: #fff; }
+    .filter-btn.active { background: var(--brand-blue); color: #fff; border-color: var(--brand-blue); }
+
+    .packages-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem; }
+
+    .package-card {
+      border-radius: 24px; background: var(--glass-bg);
+      -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+      border: var(--glass-border); box-shadow: 0 10px 40px -10px rgba(0,0,0,.5);
+      padding: 2rem; position: relative; overflow: hidden; transition: all .4s;
+    }
+    .package-card:hover { transform: translateY(-4px); background: rgba(255,255,255,.05); box-shadow: 0 20px 60px -15px rgba(0,0,0,.6); }
+    .package-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--brand-blue), var(--brand-teal)); opacity: 0; transition: opacity .3s; }
+    .package-card:hover::before { opacity: 1; }
+
+    .pkg-region {
+      display: inline-block; font-size: .65rem; font-weight: 700; padding: .3rem .75rem;
+      border-radius: 100px; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 1rem;
+    }
+    .pkg-region.uk { background: rgba(59,130,246,.15); color: var(--brand-blue-light); }
+    .pkg-region.us { background: rgba(20,184,166,.15); color: var(--brand-teal); }
+
+    .pkg-city { font-size: 1.4rem; font-weight: 700; margin-bottom: .25rem; background: none; -webkit-text-fill-color: #fff; }
+    .pkg-country { color: var(--text-secondary); font-size: .85rem; margin-bottom: 1.25rem; font-family: var(--font-mono); }
+
+    .pkg-stats { display: flex; gap: 1.5rem; margin-bottom: 1.5rem; }
+    .pkg-stat { text-align: center; }
+    .pkg-stat-val { font-size: 1.5rem; font-weight: 700; color: var(--brand-blue); }
+    .pkg-stat-label { font-size: .7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .05em; }
+
+    .pkg-price { font-size: 2.5rem; font-weight: 700; color: #fff; margin-bottom: .25rem; }
+    .pkg-price span { font-size: 1rem; color: var(--text-secondary); font-weight: 400; }
+
+    .btn-buy {
+      display: block; width: 100%; padding: 1rem; border-radius: 100px; border: none; cursor: pointer;
+      background: var(--brand-blue); color: #fff; font-size: 1rem; font-weight: 700;
+      font-family: var(--font-main); text-align: center; margin-top: 1.5rem;
+      transition: transform .3s, box-shadow .3s;
+      box-shadow: 0 10px 30px -10px rgba(59,130,246,.3);
+    }
+    .btn-buy:hover { transform: scale(1.02); box-shadow: 0 15px 40px -10px rgba(59,130,246,.5); }
+
+    .empty-state { text-align: center; padding: 4rem 2rem; color: var(--text-secondary); }
+    .empty-state h3 { font-size: 1.3rem; margin-bottom: .5rem; background: none; -webkit-text-fill-color: #fff; }
+
+    .footer { padding: 4rem 2rem; text-align: center; background: var(--base-900); border-top: var(--glass-border); margin-top: 4rem; }
+    .footer p { color: var(--text-muted); font-size: .85rem; font-family: var(--font-mono); }
+    .footer a { color: var(--brand-blue); }
+
+    @media (max-width: 768px) {
+      .packages-grid { grid-template-columns: 1fr; }
+      .header-nav { gap: 1rem; }
+      .header-nav a:not(.btn-nav) { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-container">
+      <a href="/" class="logo">SCRAPE<span>TRA</span></a>
+      <div class="header-nav">
+        <a href="/#features">Features</a>
+        <a href="/#pricing">Pricing</a>
+        <a href="/browse" class="btn-nav">Browse Packages</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <h1>Available Lead Packages</h1>
+      <p>Verified B2B leads, ready for instant download</p>
+    </div>
+
+    <div class="filter-bar">
+      <a href="/browse" class="filter-btn {% if not selected_region %}active{% endif %}">All Regions</a>
+      <a href="/browse?region=uk" class="filter-btn {% if selected_region == 'uk' %}active{% endif %}">United Kingdom</a>
+      <a href="/browse?region=us" class="filter-btn {% if selected_region == 'us' %}active{% endif %}">United States</a>
+    </div>
+
+    {% if packages %}
+    <div class="packages-grid">
+      {% for p in packages %}
+      <div class="package-card">
+        <div class="pkg-region {{ p.region }}">{{ p.region | upper }}</div>
+        <div class="pkg-city">{{ p.city }}</div>
+        <div class="pkg-country">{{ p.country }}</div>
+        <div class="pkg-stats">
+          <div class="pkg-stat">
+            <div class="pkg-stat-val">{{ p.lead_count }}</div>
+            <div class="pkg-stat-label">Leads</div>
+          </div>
+          <div class="pkg-stat">
+            <div class="pkg-stat-val">100%</div>
+            <div class="pkg-stat-label">MX Verified</div>
+          </div>
+        </div>
+        <div class="pkg-price">{{ regions[p.region]['symbol'] }}{{ '%.0f' | format(p.price) }} <span>/ package</span></div>
+        <a href="/browse/{{ p.id }}" class="btn-buy">View Package</a>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <h3>No packages available yet</h3>
+      <p>New lead packages are added regularly. Check back soon.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="footer">
+    <p>&copy; 2026 ScrapeTra. All rights reserved. | <a href="/privacy">Privacy</a> | <a href="/terms">Terms</a></p>
+    <p style="margin-top:.5rem">A Nanoclone Systems Product</p>
+  </div>
+</body>
+</html>

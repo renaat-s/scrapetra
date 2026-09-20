@@ -57,3 +57,7 @@ SCRAPE_TARGETS = {
 }
 
 PACKAGE_LEAD_COUNT = 50
+
+ADMIN_PASSWORD = os.getenv("SCRAPETRA_ADMIN_PASSWORD", "scrapetra-admin-2026")
+SESSION_SECRET = os.getenv("SCRAPETRA_SESSION_SECRET", "scrapetra-session-secret-change-me")
+SESSION_MAX_AGE = 86400  # 24 hours

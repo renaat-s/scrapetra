@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ package.city }} Lead Package ({{ lead_count }} leads) | ScrapeTra</title>
+  <meta name="description" content="{{ lead_count }} verified B2B email leads in {{ package.city }}, {{ package.country }}. MX-validated. Instant CSV delivery.">
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Inter+Tight:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --base-950: #030712; --base-900: #0a0f1e; --base-800: #111827;
+      --brand-blue: #3b82f6; --brand-blue-light: #60a5fa; --brand-teal: #14b8a6;
+      --grad-text: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
+      --glass-bg: rgba(255,255,255,.03); --glass-blur: blur(24px) saturate(180%);
+      --glass-border: 1px solid rgba(255,255,255,.06);
+      --font-main: "Instrument Sans", system-ui, sans-serif;
+      --font-mono: "Inter Tight", monospace;
+      --text-primary: #ffffff; --text-secondary: rgba(255,255,255,.6); --text-muted: rgba(255,255,255,.3);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+    body {
+      font-family: var(--font-main); line-height: 1.5; color: var(--text-primary);
+      background-color: var(--base-950);
+      background-image: radial-gradient(at 0% 0%, rgba(59,130,246,.08) 0px, transparent 50%),
+                        radial-gradient(at 100% 100%, rgba(20,184,166,.05) 0px, transparent 50%);
+      min-height: 100vh;
+    }
+    h1, h2, h3 { font-weight: 700; letter-spacing: -.04em; background: var(--grad-text); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    a { text-decoration: none; color: inherit; }
+
+    .header { position: fixed; top: 2rem; left: 0; width: 100%; z-index: 1000; display: flex; justify-content: center; padding: 0 2rem; pointer-events: none; }
+    .header-container {
+      width: 100%; max-width: 1400px; height: 64px; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2.5rem; border-radius: 100px;
+      background: linear-gradient(135deg, rgba(59,130,246,.12), rgba(10,15,30,.7), rgba(20,184,166,.08));
+      -webkit-backdrop-filter: blur(12px) saturate(120%); backdrop-filter: blur(12px) saturate(120%);
+      border: 1px solid rgba(255,255,255,.08); box-shadow: 0 10px 40px -10px rgba(0,0,0,.5);
+      pointer-events: auto;
+    }
+    .logo { font-weight: 700; font-size: 1.1rem; letter-spacing: .1em; color: #fff; }
+    .logo span { color: var(--brand-blue); }
+    .header-nav { display: flex; align-items: center; gap: 2.5rem; }
+    .header-nav a { font-size: .9rem; font-weight: 500; color: rgba(255,255,255,.6); transition: all .3s; }
+    .header-nav a:hover { color: #fff; }
+    .btn-nav {
+      color: var(--brand-blue) !important; font-weight: 700 !important; padding: .6rem 1.4rem;
+      border: 1px solid var(--brand-blue); border-radius: 100px; background: rgba(59,130,246,.08); transition: all .3s;
+    }
+    .btn-nav:hover { background: var(--brand-blue); color: #000 !important; box-shadow: 0 0 20px rgba(59,130,246,.3); }
+
+    .page { max-width: 900px; margin: 0 auto; padding: 8rem 2rem 4rem; }
+
+    .breadcrumb { margin-bottom: 2rem; font-size: .85rem; }
+    .breadcrumb a { color: var(--brand-blue-light); }
+    .breadcrumb span { color: var(--text-muted); margin: 0 .5rem; }
+
+    .detail-card {
+      border-radius: 32px; background: var(--glass-bg);
+      -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+      border: var(--glass-border); box-shadow: 0 10px 40px -10px rgba(0,0,0,.5);
+      padding: 3rem; position: relative; overflow: hidden; margin-bottom: 2rem;
+    }
+    .detail-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--brand-blue), var(--brand-teal)); }
+
+    .pkg-region-badge {
+      display: inline-block; font-size: .7rem; font-weight: 700; padding: .35rem .85rem;
+      border-radius: 100px; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 1rem;
+    }
+    .pkg-region-badge.uk { background: rgba(59,130,246,.15); color: var(--brand-blue-light); }
+    .pkg-region-badge.us { background: rgba(20,184,166,.15); color: var(--brand-teal); }
+
+    .detail-card h1 { font-size: clamp(1.8rem, 4vw, 2.5rem); margin-bottom: .25rem; }
+    .detail-country { color: var(--text-secondary); font-size: 1rem; margin-bottom: 1.5rem; font-family: var(--font-mono); }
+
+    .detail-stats { display: flex; gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap; }
+    .detail-stat { text-align: center; min-width: 100px; }
+    .detail-stat-val { font-size: 2rem; font-weight: 700; color: var(--brand-blue); }
+    .detail-stat-label { font-size: .75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .05em; }
+
+    .detail-price { font-size: 3.5rem; font-weight: 700; color: #fff; margin-bottom: .25rem; }
+    .detail-price span { font-size: 1.2rem; color: var(--text-secondary); font-weight: 400; }
+    .detail-desc { color: var(--text-secondary); font-size: 1rem; margin-bottom: 2rem; }
+
+    .btn-buy {
+      display: block; width: 100%; padding: 1.2rem; border-radius: 100px; border: none; cursor: pointer;
+      background: var(--brand-blue); color: #fff; font-size: 1.1rem; font-weight: 700;
+      font-family: var(--font-main); text-align: center;
+      transition: transform .3s, box-shadow .3s;
+      box-shadow: 0 10px 30px -10px rgba(59,130,246,.4);
+    }
+    .btn-buy:hover { transform: scale(1.02); box-shadow: 0 15px 40px -10px rgba(59,130,246,.5); }
+
+    .features-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 2rem; }
+    .feature-item {
+      display: flex; align-items: center; gap: .75rem; padding: 1rem;
+      border-radius: 16px; background: rgba(255,255,255,.02); border: var(--glass-border);
+    }
+    .feature-icon { color: var(--brand-teal); font-size: 1.2rem; flex-shrink: 0; }
+    .feature-text { color: var(--text-secondary); font-size: .9rem; }
+
+    .sample-card {
+      border-radius: 24px; background: var(--glass-bg);
+      -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+      border: var(--glass-border); padding: 2rem; margin-bottom: 2rem;
+    }
+    .sample-card h3 { font-size: 1.1rem; margin-bottom: 1rem; }
+    .sample-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    .sample-table th { text-align: left; padding: .75rem; border-bottom: 2px solid rgba(255,255,255,.1); color: var(--text-secondary); font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; }
+    .sample-table td { padding: .75rem; border-bottom: 1px solid rgba(255,255,255,.05); }
+    .sample-table tr:hover td { background: rgba(255,255,255,.02); }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: .7rem; font-weight: 600; }
+    .badge.yes { background: rgba(16,185,129,.15); color: #10b981; }
+
+    .footer { padding: 4rem 2rem; text-align: center; background: var(--base-900); border-top: var(--glass-border); margin-top: 4rem; }
+    .footer p { color: var(--text-muted); font-size: .85rem; font-family: var(--font-mono); }
+    .footer a { color: var(--brand-blue); }
+
+    @media (max-width: 768px) {
+      .features-grid { grid-template-columns: 1fr; }
+      .detail-stats { gap: 1rem; }
+      .header-nav { gap: 1rem; }
+      .header-nav a:not(.btn-nav) { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-container">
+      <a href="/" class="logo">SCRAPE<span>TRA</span></a>
+      <div class="header-nav">
+        <a href="/#features">Features</a>
+        <a href="/browse" class="btn-nav">Browse Packages</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="breadcrumb">
+      <a href="/browse">Packages</a>
+      <span>/</span>
+      <a href="/browse?region={{ package.region }}">{{ package.region | upper }}</a>
+      <span>/</span>
+      {{ package.city }}
+    </div>
+
+    <div class="detail-card">
+      <div class="pkg-region-badge {{ package.region }}">{{ package.region | upper }}</div>
+      <h1>{{ package.city }} Lead Package</h1>
+      <div class="detail-country">{{ package.country }}</div>
+
+      <div class="detail-stats">
+        <div class="detail-stat">
+          <div class="detail-stat-val">{{ lead_count }}</div>
+          <div class="detail-stat-label">Verified Leads</div>
+        </div>
+        <div class="detail-stat">
+          <div class="detail-stat-val">100%</div>
+          <div class="detail-stat-label">MX Verified</div>
+        </div>
+        <div class="detail-stat">
+          <div class="detail-stat-val">60s</div>
+          <div class="detail-stat-label">Delivery</div>
+        </div>
+      </div>
+
+      <div class="detail-price">{{ symbol }}{{ '%.0f' | format(package.price) }} <span>/ package</span></div>
+      <p class="detail-desc">{{ lead_count }} verified B2B email leads in {{ package.city }}. Delivered as CSV within 60 seconds.</p>
+
+      <form method="POST" action="/login">
+        <input type="hidden" name="next" value="/browse/{{ package.id }}">
+        <button type="submit" class="btn-buy">Buy Now — {{ symbol }}{{ '%.0f' | format(package.price) }}</button>
+      </form>
+
+      <div class="features-grid">
+        <div class="feature-item"><span class="feature-icon">&#x2713;</span><span class="feature-text">Company name & URL</span></div>
+        <div class="feature-item"><span class="feature-icon">&#x2713;</span><span class="feature-text">Verified email address</span></div>
+        <div class="feature-item"><span class="feature-icon">&#x2713;</span><span class="feature-text">MX record validation</span></div>
+        <div class="feature-item"><span class="feature-icon">&#x2713;</span><span class="feature-text">Instant CSV delivery</span></div>
+      </div>
+    </div>
+
+    {% if leads %}
+    <div class="sample-card">
+      <h3>Sample Leads (first 10)</h3>
+      <div style="overflow-x:auto">
+        <table class="sample-table">
+          <thead>
+            <tr><th>Company</th><th>Email</th><th>Verified</th><th>MX OK</th></tr>
+          </thead>
+          <tbody>
+            {% for l in leads[:10] %}
+            <tr>
+              <td><strong>{{ l.company_name }}</strong></td>
+              <td>{{ l.email }}</td>
+              <td>{% if l.email_valid %}<span class="badge yes">Yes</span>{% endif %}</td>
+              <td>{% if l.domain_valid %}<span class="badge yes">Yes</span>{% endif %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <p style="color:var(--text-muted);font-size:.8rem;margin-top:1rem">Showing {{ [leads|length, 10] | min }} of {{ leads.length }} leads. Full list delivered after purchase.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="footer">
+    <p>&copy; 2026 ScrapeTra. All rights reserved. | <a href="/privacy">Privacy</a> | <a href="/terms">Terms</a></p>
+    <p style="margin-top:.5rem">A Nanoclone Systems Product</p>
+  </div>
+</body>
+</html>

@@ -2,6 +2,8 @@ import csv
 import io
 import asyncio
 import time
+import hmac
+import hashlib
 import logging
 import os
 from collections import defaultdict
@@ -20,6 +22,7 @@ from config import (
     PAYPAL_CLIENT_ID, BANK_SORT_CODE, BANK_ACCOUNT,
     DEFAULT_LEAD_PRICE, SENDER_NAME,
     REGIONS, SCRAPE_TARGETS, PACKAGE_LEAD_COUNT,
+    ADMIN_PASSWORD, SESSION_SECRET, SESSION_MAX_AGE,
 )
 from database import (
     init_db, create_search, update_search_status, insert_leads,
@@ -67,6 +70,37 @@ def _check_rate_limit(key: str) -> bool:
         return False
     _rate_limit_store[key].append(now)
     return True
+
+
+# --- AUTH HELPERS ---
+
+def _create_session_token(password: str) -> str:
+    """Create a signed session token from password + timestamp."""
+    ts = str(int(time.time()))
+    payload = f"{password}:{ts}"
+    sig = hmac.new(SESSION_SECRET.encode(), payload.encode(), hashlib.sha256).hexdigest()
+    return f"{ts}:{sig}"
+
+
+def _verify_session_token(token: str) -> bool:
+    """Verify a session token is valid and not expired."""
+    try:
+        ts_str, sig = token.split(":", 1)
+        ts = int(ts_str)
+        age = time.time() - ts
+        if age > SESSION_MAX_AGE or age < 0:
+            return False
+        payload = f"{ADMIN_PASSWORD}:{ts_str}"
+        expected = hmac.new(SESSION_SECRET.encode(), payload.encode(), hashlib.sha256).hexdigest()
+        return hmac.compare_digest(sig, expected)
+    except Exception:
+        return False
+
+
+def _require_admin(request: Request) -> bool:
+    """Check if request has a valid admin session. Returns True if authenticated."""
+    token = request.cookies.get("session_token", "")
+    return _verify_session_token(token)
 
 
 @app.on_event("startup")
@@ -152,8 +186,68 @@ async def mx_check_api(domain: str = Query(...)):
         return {"domain": domain, "valid": False, "mx_records": []}
 
 
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request, next: str = "/dashboard"):
+    if _require_admin(request):
+        return RedirectResponse(next)
+    return templates.TemplateResponse("login.html", {"request": request, "next": next})
+
+
+@app.post("/login", response_class=HTMLResponse)
+async def login_submit(request: Request, password: str = Form(...), next: str = Form("/dashboard")):
+    if password != ADMIN_PASSWORD:
+        return templates.TemplateResponse("login.html", {
+            "request": request, "next": next, "error": "Invalid password"
+        }, status_code=401)
+
+    token = _create_session_token(ADMIN_PASSWORD)
+    response = RedirectResponse(next, status_code=303)
+    response.set_cookie(
+        "session_token", token,
+        max_age=SESSION_MAX_AGE, httponly=True, samesite="lax",
+    )
+    return response
+
+
+@app.get("/logout")
+async def logout():
+    response = RedirectResponse("/", status_code=303)
+    response.delete_cookie("session_token")
+    return response
+
+
+@app.get("/browse", response_class=HTMLResponse)
+async def browse_packages(request: Request, region: str = Query("")):
+    packages = await get_packages(region=region, status="ready")
+    return templates.TemplateResponse("browse.html", {
+        "request": request,
+        "packages": packages,
+        "regions": REGIONS,
+        "selected_region": region,
+    })
+
+
+@app.get("/browse/{package_id}", response_class=HTMLResponse)
+async def browse_package_detail(request: Request, package_id: str):
+    package = await get_package(package_id)
+    if not package or package["status"] != "ready":
+        raise HTTPException(status_code=404, detail="Package not found")
+    leads = await get_leads(package_id)
+    region_cfg = REGIONS.get(package["region"], REGIONS["uk"])
+    return templates.TemplateResponse("browse-package.html", {
+        "request": request,
+        "package": package,
+        "leads": leads,
+        "lead_count": len(leads),
+        "symbol": region_cfg["symbol"],
+        "currency": region_cfg["currency"],
+    })
+
+
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request):
+    if not _require_admin(request):
+        return RedirectResponse("/login?next=/dashboard", status_code=303)
     return templates.TemplateResponse("dashboard.html", {
         "request": request,
         "stripe_publishable_key": STRIPE_PUBLISHABLE_KEY,
@@ -162,7 +256,9 @@ async def dashboard(request: Request):
 
 
 @app.get("/api/campaigns")
-async def list_campaigns():
+async def list_campaigns(request: Request):
+    if not _require_admin(request):
+        raise HTTPException(status_code=401, detail="Admin access required")
     campaigns = await get_all_campaigns()
     return {"campaigns": campaigns, "count": len(campaigns)}
 
@@ -234,7 +330,9 @@ async def _run_campaign(
 
 
 @app.get("/api/campaigns/{campaign_id}")
-async def get_campaign_detail(campaign_id: str):
+async def get_campaign_detail(request: Request, campaign_id: str):
+    if not _require_admin(request):
+        raise HTTPException(status_code=401, detail="Admin access required")
     campaign = await get_campaign(campaign_id)
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
@@ -267,6 +365,7 @@ async def send_campaign_pitch(
 
     region = campaign.get("region", "uk")
     region_cfg = REGIONS.get(region, REGIONS["uk"])
+    browse_base = origin.replace("http://", "https://").replace("127.0.0.1", "www.scrapetra.com")
 
     for lead in valid_leads:
         pitch = generate_pitch_email(
@@ -283,6 +382,7 @@ async def send_campaign_pitch(
             template_style=campaign.get("template_style", "standard"),
             currency=region_cfg["currency"],
             symbol=region_cfg["symbol"],
+            browse_url=f"{browse_base}/browse?region={region}",
         )
 
         log_id = await log_outreach(campaign_id, pitch["to"], pitch["subject"])
@@ -414,7 +514,9 @@ async def _run_search_agent(search_id: str, keyword: str, count: int, region: st
 
 
 @app.get("/api/status/{search_id}")
-async def search_status(search_id: str):
+async def search_status(request: Request, search_id: str):
+    if not _require_admin(request):
+        raise HTTPException(status_code=401, detail="Admin access required")
     search = await get_search(search_id)
     if not search:
         raise HTTPException(status_code=404, detail="Search not found")
@@ -422,7 +524,9 @@ async def search_status(search_id: str):
 
 
 @app.get("/api/leads/{search_id}")
-async def search_leads(search_id: str):
+async def search_leads(request: Request, search_id: str):
+    if not _require_admin(request):
+        raise HTTPException(status_code=401, detail="Admin access required")
     search = await get_search(search_id)
     if not search:
         raise HTTPException(status_code=404, detail="Search not found")
@@ -712,7 +816,12 @@ async def package_paypal_checkout(package_id: str, request: Request):
 
 
 @app.get("/api/scrape-targets")
-async def scrape_targets():
+async def scrape_targets(request: Request):
+    if not _require_admin(request):
+        raise HTTPException(status_code=401, detail="Admin access required")
     return {"targets": SCRAPE_TARGETS, "regions": REGIONS}
+
+
+if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

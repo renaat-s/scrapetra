@@ -27,12 +27,9 @@ What's in the CSV:
 
 Price: ${symbol}${price} (one-time, no subscription)
 
-Buy now and receive the CSV within 60 seconds:
+View package & buy now: ${browse_url}
 
-Stripe (Card): ${stripe_url}
-PayPal: ${paypal_url}
-${bank_details}
-Every email was checked against DNS MX records before inclusion. Zero bounces guaranteed.
+The CSV is delivered to your email within 60 seconds of payment. Every email was checked against DNS MX records before inclusion. Zero bounces guaranteed.
 
 ${sender_name}
 ScrapeTra — Autonomous Lead Intelligence
@@ -55,10 +52,8 @@ Traditional data brokers charge 3-5x more for worse data.
 
 ScrapeTra's price: ${symbol}${price} (one-time, no subscription)
 
-Get the full export now:
-Stripe (instant): ${stripe_url}
-PayPal: ${paypal_url}
-${bank_details}
+View package & buy now: ${browse_url}
+
 The CSV is delivered to your email within seconds of payment.
 
 If you sell to ${category} companies in ${city}, this saves you hours of manual prospecting.
@@ -84,9 +79,8 @@ Every record includes:
 
 Price: ${symbol}${price} — instant CSV delivery.
 
-Stripe: ${stripe_url}
-PayPal: ${paypal_url}
-${bank_details}
+View package & buy now: ${browse_url}
+
 If you're prospecting in ${city}, this is the fastest way to get a clean list.
 
 ${sender_name}
@@ -143,6 +137,7 @@ def generate_pitch_email(
     template_style: str = "standard",
     currency: str = "GBP",
     symbol: str = "\u00a3",
+    browse_url: str = "",
 ) -> dict:
     tmpl = OUTREACH_TEMPLATES.get(template_style, OUTREACH_TEMPLATES["standard"])
 
@@ -163,6 +158,7 @@ def generate_pitch_email(
         bank_details=bank_details,
         ref=ref,
         sender_name=sender_name,
+        browse_url=browse_url or "#",
     )
 
     subject_line = body.split("\n")[0].replace("Subject: ", "")

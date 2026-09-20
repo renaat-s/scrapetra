@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | ScrapeTra</title>
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Inter+Tight:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --base-950: #030712; --base-900: #0a0f1e; --base-800: #111827;
+      --brand-blue: #3b82f6; --brand-blue-light: #60a5fa; --brand-teal: #14b8a6;
+      --grad-text: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
+      --glass-bg: rgba(255,255,255,.03); --glass-blur: blur(24px) saturate(180%);
+      --glass-border: 1px solid rgba(255,255,255,.06);
+      --font-main: "Instrument Sans", system-ui, sans-serif;
+      --font-mono: "Inter Tight", monospace;
+      --text-primary: #ffffff; --text-secondary: rgba(255,255,255,.6);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-main); color: var(--text-primary); min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      background-color: var(--base-950);
+      background-image: radial-gradient(at 0% 0%, rgba(59,130,246,.08) 0px, transparent 50%),
+                        radial-gradient(at 100% 100%, rgba(20,184,166,.05) 0px, transparent 50%);
+    }
+    .login-card {
+      width: 100%; max-width: 420px; margin: 2rem; padding: 3rem;
+      border-radius: 32px; background: var(--glass-bg);
+      -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+      border: var(--glass-border); box-shadow: 0 10px 40px -10px rgba(0,0,0,.5);
+      position: relative; overflow: hidden;
+    }
+    .login-card::before {
+      content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--brand-blue), var(--brand-teal));
+    }
+    .logo { text-align: center; margin-bottom: 2rem; }
+    .logo-text { font-weight: 700; font-size: 1.5rem; letter-spacing: .1em; }
+    .logo-text span { color: var(--brand-blue); }
+    .logo-sub { font-size: .85rem; color: var(--text-secondary); margin-top: .25rem; font-family: var(--font-mono); }
+    h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: .5rem; background: none; -webkit-text-fill-color: #fff; text-align: center; }
+    .subtitle { color: var(--text-secondary); font-size: .9rem; text-align: center; margin-bottom: 2rem; }
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label { display: block; font-size: .75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .5rem; }
+    .form-group input {
+      width: 100%; padding: 1rem 1.25rem; border-radius: 16px; border: var(--glass-border);
+      background: rgba(255,255,255,.05); color: #fff; font-size: 1rem;
+      font-family: var(--font-main); outline: none; transition: border .3s, box-shadow .3s;
+    }
+    .form-group input:focus { border-color: var(--brand-blue); box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
+    .form-group input::placeholder { color: rgba(255,255,255,.25); }
+    .btn-login {
+      width: 100%; padding: 1rem; border-radius: 100px; border: none; cursor: pointer;
+      background: var(--brand-blue); color: #fff; font-size: 1rem; font-weight: 700;
+      font-family: var(--font-main); transition: transform .3s, box-shadow .3s;
+      box-shadow: 0 10px 30px -10px rgba(59,130,246,.4);
+    }
+    .btn-login:hover { transform: scale(1.02); box-shadow: 0 15px 40px -10px rgba(59,130,246,.5); }
+    .btn-login:active { transform: scale(.98); }
+    .error-msg {
+      background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.2);
+      border-radius: 12px; padding: .75rem 1rem; margin-bottom: 1.25rem;
+      color: #f87171; font-size: .85rem; text-align: center;
+    }
+    .back-link { display: block; text-align: center; margin-top: 1.5rem; color: var(--text-secondary); font-size: .85rem; }
+    .back-link a { color: var(--brand-blue-light); text-decoration: none; transition: color .2s; }
+    .back-link a:hover { color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="logo">
+      <div class="logo-text">SCRAPE<span>TRA</span></div>
+      <div class="logo-sub">Autonomous Lead Intelligence</div>
+    </div>
+    <h2>Welcome Back</h2>
+    <p class="subtitle">Enter your password to continue</p>
+
+    {% if error %}
+    <div class="error-msg">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" action="/login">
+      <input type="hidden" name="next" value="{{ next }}">
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" name="password" placeholder="Enter admin password" required autofocus>
+      </div>
+      <button type="submit" class="btn-login">Sign In</button>
+    </form>
+
+    <div class="back-link">
+      <a href="/">Back to ScrapeTra</a>
+    </div>
+  </div>
+</body>
+</html>
