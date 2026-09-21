@@ -34,7 +34,7 @@ from database import (
     create_package, update_package, get_package, get_packages, get_ready_packages,
     get_drip_eligible_campaigns,
     create_unsubscribe, get_unsubscribe_email, is_email_unsubscribed,
-    generate_unsubscribe_url,
+    generate_unsubscribe_url, delete_campaign,
 )
 from agent import run_agent
 from stripe_pay import create_checkout_session, verify_webhook
@@ -361,6 +361,17 @@ async def get_campaign_detail(request: Request, campaign_id: str):
     leads = await get_leads(campaign_id)
     logs = await get_outreach_logs(campaign_id)
     return {"campaign": campaign, "leads": leads, "logs": logs, "lead_count": len(leads)}
+
+
+@app.delete("/api/campaigns/{campaign_id}")
+async def delete_campaign_route(request: Request, campaign_id: str):
+    api_key = request.headers.get("X-API-Key", "") or request.query_params.get("api_key", "")
+    if api_key != API_KEY:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    deleted = await delete_campaign(campaign_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    return {"deleted": True, "campaign_id": campaign_id}
 
 
 @app.post("/api/campaigns/{campaign_id}/pitch")

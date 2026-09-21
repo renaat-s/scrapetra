@@ -362,6 +362,16 @@ async def get_all_campaigns(limit: int = 50) -> list[dict]:
         return [dict(row) for row in rows]
 
 
+async def delete_campaign(campaign_id: str) -> bool:
+    pool = await _get_pool()
+    async with pool.acquire() as db:
+        await db.execute("DELETE FROM outreach_log WHERE campaign_id = $1", campaign_id)
+        await db.execute("DELETE FROM leads WHERE search_id = $1", campaign_id)
+        await db.execute("DELETE FROM payments WHERE search_id = $1", campaign_id)
+        result = await db.execute("DELETE FROM campaigns WHERE id = $1", campaign_id)
+        return result.endswith("1")
+
+
 async def log_outreach(campaign_id: str, lead_email: str, subject: str) -> str:
     log_id = str(uuid.uuid4())
     pool = await _get_pool()
