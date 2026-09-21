@@ -30,10 +30,11 @@ BANK_ACCOUNT = os.getenv("SCRAPETRA_BANK_ACCOUNT", "02337157")
 BANK_NAME = os.getenv("SCRAPETRA_BANK_NAME", "SANTANDER UK")
 
 DEFAULT_LEAD_PRICE = float(os.getenv("SCRAPETRA_LEAD_PRICE", "35.00"))
+DEFAULT_LEAD_PRICE_US = float(os.getenv("SCRAPETRA_LEAD_PRICE_US", "45.00"))
 
 REGIONS = {
-    "uk": {"region_code": "uk-en", "currency": "GBP", "symbol": "£", "price": 35.00},
-    "us": {"region_code": "us-en", "currency": "USD", "symbol": "$", "price": 45.00},
+    "uk": {"region_code": "uk-en", "currency": "GBP", "symbol": "£", "price": DEFAULT_LEAD_PRICE},
+    "us": {"region_code": "us-en", "currency": "USD", "symbol": "$", "price": DEFAULT_LEAD_PRICE_US},
 }
 
 SCRAPE_TARGETS = {
@@ -61,3 +62,4 @@ PACKAGE_LEAD_COUNT = 50
 ADMIN_PASSWORD = os.getenv("SCRAPETRA_ADMIN_PASSWORD", "scrapetra-admin-2026")
 SESSION_SECRET = os.getenv("SCRAPETRA_SESSION_SECRET", "scrapetra-session-secret-change-me")
 SESSION_MAX_AGE = 86400  # 24 hours
+BASE_URL = os.getenv("SCRAPETRA_BASE_URL", "https://www.scrapetra.com")

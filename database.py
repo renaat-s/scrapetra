@@ -2,6 +2,7 @@ import asyncpg
 import os
 import uuid
 import secrets
+import hashlib
 import ssl
 from datetime import datetime, timedelta
 
@@ -136,6 +137,34 @@ async def init_db():
                     created_at TEXT,
                     completed_at TEXT,
                     sold_at TEXT
+                )
+            """)
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS users (
+                    id TEXT PRIMARY KEY,
+                    email TEXT UNIQUE NOT NULL,
+                    password_hash TEXT NOT NULL,
+                    role TEXT DEFAULT 'buyer',
+                    created_at TEXT
+                )
+            """)
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS login_attempts (
+                    id TEXT PRIMARY KEY,
+                    ip_address TEXT NOT NULL,
+                    email TEXT,
+                    attempted_at TEXT NOT NULL,
+                    success INTEGER DEFAULT 0
+                )
+            """)
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS unsubscribes (
+                    id TEXT PRIMARY KEY,
+                    email TEXT UNIQUE NOT NULL,
+                    token TEXT UNIQUE NOT NULL,
+                    lead_id TEXT,
+                    campaign_id TEXT,
+                    unsubscribed_at TEXT NOT NULL
                 )
             """)
     except Exception as e:
@@ -424,3 +453,92 @@ async def get_packages(
 
 async def get_ready_packages(region: str = "") -> list[dict]:
     return await get_packages(region=region, status="ready")
+
+
+async def get_drip_eligible_campaigns(days_since_pitch: int = 3) -> list[dict]:
+    pool = await _get_pool()
+    async with pool.acquire() as db:
+        rows = await db.fetch("""
+            SELECT c.* FROM campaigns c
+            WHERE c.status = 'pitched'
+              AND c.completed_at IS NOT NULL
+              AND (now() - c.completed_at::timestamp) > make_interval(days => $1)
+              AND NOT EXISTS (
+                  SELECT 1 FROM payments p
+                  WHERE p.search_id = c.id AND p.status = 'paid'
+              )
+              AND NOT EXISTS (
+                  SELECT 1 FROM outreach_log o
+                  WHERE o.campaign_id = c.id
+                    AND o.subject LIKE 'Re:%'
+              )
+        """, days_since_pitch)
+        return [dict(row) for row in rows]
+
+
+async def has_step2_been_sent(campaign_id: str) -> bool:
+    pool = await _get_pool()
+    async with pool.acquire() as db:
+        row = await db.fetchval("""
+            SELECT COUNT(*) FROM outreach_log
+            WHERE campaign_id = $1 AND subject LIKE 'Re:%'
+        """, campaign_id)
+        return row > 0
+
+
+def _make_unsubscribe_token(email: str) -> str:
+    raw = f"{email}:{secrets.token_hex(8)}"
+    return hashlib.sha256(raw.encode()).hexdigest()[:32]
+
+
+def generate_unsubscribe_url(email: str, base_url: str = "https://www.scrapetra.com") -> str:
+    import hmac as _hmac
+    from config import SESSION_SECRET
+    sig = _hmac.new(SESSION_SECRET.encode(), email.lower().strip().encode(), hashlib.sha256).hexdigest()[:16]
+    safe_email = email.lower().strip().replace("@", "@")
+    return f"{base_url}/unsubscribe/{sig}/{safe_email}"
+
+
+def verify_unsubscribe_token(token: str, email: str) -> bool:
+    import hmac as _hmac
+    from config import SESSION_SECRET
+    expected = _hmac.new(SESSION_SECRET.encode(), email.lower().strip().encode(), hashlib.sha256).hexdigest()[:16]
+    return _hmac.compare_digest(token, expected)
+
+
+async def create_unsubscribe(email: str, lead_id: str = "", campaign_id: str = "") -> str:
+    token = _make_unsubscribe_token(email)
+    sub_id = str(uuid.uuid4())
+    now = datetime.utcnow().isoformat()
+    pool = await _get_pool()
+    async with pool.acquire() as db:
+        await db.execute("""
+            INSERT INTO unsubscribes (id, email, token, lead_id, campaign_id, unsubscribed_at)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            ON CONFLICT (email) DO UPDATE SET token = EXCLUDED.token, unsubscribed_at = EXCLUDED.unsubscribed_at
+        """, sub_id, email.lower().strip(), token, lead_id, campaign_id, now)
+    return token
+
+
+async def get_unsubscribe_email(token: str) -> str | None:
+    pool = await _get_pool()
+    async with pool.acquire() as db:
+        row = await db.fetchval("SELECT email FROM unsubscribes WHERE token = $1", token)
+        return row
+
+
+async def is_email_unsubscribed(email: str) -> bool:
+    pool = await _get_pool()
+    async with pool.acquire() as db:
+        row = await db.fetchval(
+            "SELECT COUNT(*) FROM unsubscribes WHERE email = $1",
+            email.lower().strip(),
+        )
+        return row > 0
+
+
+async def get_unsubscribed_emails() -> set[str]:
+    pool = await _get_pool()
+    async with pool.acquire() as db:
+        rows = await db.fetch("SELECT email FROM unsubscribes")
+        return {row["email"] for row in rows}

@@ -22,7 +22,7 @@ from config import (
     PAYPAL_CLIENT_ID, BANK_SORT_CODE, BANK_ACCOUNT,
     DEFAULT_LEAD_PRICE, SENDER_NAME,
     REGIONS, SCRAPE_TARGETS, PACKAGE_LEAD_COUNT,
-    ADMIN_PASSWORD, SESSION_SECRET, SESSION_MAX_AGE,
+    ADMIN_PASSWORD, SESSION_SECRET, SESSION_MAX_AGE, BASE_URL,
 )
 from database import (
     init_db, create_search, update_search_status, insert_leads,
@@ -32,12 +32,16 @@ from database import (
     create_campaign, update_campaign, get_campaign, get_all_campaigns,
     log_outreach, update_outreach_status, get_outreach_logs,
     create_package, update_package, get_package, get_packages, get_ready_packages,
+    get_drip_eligible_campaigns,
+    create_unsubscribe, get_unsubscribe_email, is_email_unsubscribed,
+    generate_unsubscribe_url,
 )
 from agent import run_agent
 from stripe_pay import create_checkout_session, verify_webhook
 from paypal_pay import create_paypal_order, capture_paypal_order
 from outreach import (
     run_outreach_campaign, generate_pitch_email, fulfill_delivery,
+    generate_drip_email,
 )
 from emailer import send_pitch_email, send_csv_delivery
 
@@ -111,6 +115,11 @@ async def startup():
 @app.get("/", response_class=HTMLResponse)
 async def landing(request: Request):
     return templates.TemplateResponse("landing.html", {"request": request})
+
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok", "service": "scrapetra"}
 
 
 @app.get("/leads/{region}/{city_slug}", response_class=HTMLResponse)
@@ -216,6 +225,19 @@ async def logout():
     return response
 
 
+@app.get("/unsubscribe/{token}/{email}", response_class=HTMLResponse)
+async def unsubscribe_page(request: Request, token: str, email: str):
+    from database import verify_unsubscribe_token
+    if not verify_unsubscribe_token(token, email):
+        return templates.TemplateResponse("unsubscribe.html", {
+            "request": request, "email": "",
+        })
+    await create_unsubscribe(email)
+    return templates.TemplateResponse("unsubscribe.html", {
+        "request": request, "email": email,
+    })
+
+
 @app.get("/browse", response_class=HTMLResponse)
 async def browse_packages(request: Request, region: str = Query("")):
     packages = await get_packages(region=region, status="ready")
@@ -305,7 +327,7 @@ async def _run_campaign(
             campaign_id, category, city, target_count, price, sender_name, template_style
         )
 
-        origin = "http://127.0.0.1:8000"
+        origin = BASE_URL.rstrip("/")
         stripe_url = f"{origin}/checkout/{campaign_id}"
         paypal_url = f"{origin}/paypal/create/{campaign_id}"
 
@@ -368,6 +390,11 @@ async def send_campaign_pitch(
     browse_base = origin.replace("http://", "https://").replace("127.0.0.1", "www.scrapetra.com")
 
     for lead in valid_leads:
+        lead_email = lead.get("email", "")
+        if await is_email_unsubscribed(lead_email):
+            continue
+
+        unsub_url = generate_unsubscribe_url(lead_email, browse_base)
         pitch = generate_pitch_email(
             lead=lead,
             lead_count=campaign["valid_emails"],
@@ -383,6 +410,7 @@ async def send_campaign_pitch(
             currency=region_cfg["currency"],
             symbol=region_cfg["symbol"],
             browse_url=f"{browse_base}/browse?region={region}",
+            unsubscribe_url=unsub_url,
         )
 
         log_id = await log_outreach(campaign_id, pitch["to"], pitch["subject"])
@@ -663,6 +691,59 @@ async def stripe_webhook(request: Request):
                         logger.info("Auto-fulfilled campaign %s to %s", search_id, target_email)
 
     return {"status": "ok"}
+
+
+@app.post("/api/cron/process-drips")
+@app.get("/api/cron/process-drips")
+@app.head("/api/cron/process-drips")
+async def process_drips(request: Request):
+    api_key = request.headers.get("X-API-Key", "") or request.query_params.get("api_key", "")
+    if api_key != API_KEY:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+
+    campaigns = await get_drip_eligible_campaigns(days_since_pitch=3)
+    results = []
+
+    for campaign in campaigns:
+        cid = campaign["id"]
+        leads = await get_leads(cid)
+        valid_leads = [l for l in leads if l.get("email") and l.get("email_valid")]
+        if not valid_leads:
+            continue
+
+        region = campaign.get("region", "uk")
+        region_cfg = REGIONS.get(region, REGIONS["uk"])
+        browse_base = "https://www.scrapetra.com"
+        emails_sent = 0
+
+        for lead in valid_leads:
+            lead_email = lead.get("email", "")
+            if await is_email_unsubscribed(lead_email):
+                continue
+
+            unsub_url = generate_unsubscribe_url(lead_email, browse_base)
+            drip = generate_drip_email(
+                lead=lead,
+                lead_count=campaign["valid_emails"],
+                category=campaign["category"],
+                city=campaign["city"],
+                price=campaign["price"],
+                sender_name=SENDER_NAME,
+                symbol=region_cfg["symbol"],
+                browse_url=f"{browse_base}/browse?region={region}",
+                unsubscribe_url=unsub_url,
+            )
+
+            log_id = await log_outreach(cid, drip["to"], drip["subject"])
+            sent = send_pitch_email(drip["to"], drip["subject"], drip["body"])
+            await update_outreach_status(log_id, "sent" if sent else "failed")
+            if sent:
+                emails_sent += 1
+            await asyncio.sleep(1)
+
+        results.append({"campaign_id": cid, "emails_sent": emails_sent, "total": len(valid_leads)})
+
+    return {"processed": len(results), "results": results}
 
 
 @app.get("/api/packages")

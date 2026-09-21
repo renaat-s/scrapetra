@@ -61,6 +61,11 @@ If you have any questions, reply to this email.
 
 Best,
 ScrapeTra - Autonomous Lead Intelligence
+
+--
+ScrapeTra | London, UK
+You received this email because you purchased a lead package from ScrapeTra.
+To opt out of future marketing emails, email unsubscribe@scrapetra.com with your email address.
 """
 
     html = f"""<!DOCTYPE html>
@@ -76,6 +81,7 @@ ScrapeTra - Autonomous Lead Intelligence
   <p>The CSV contains verified company names, URLs, and MX-validated email addresses.</p>
   <hr style="border: 1px solid #e5e7eb; margin: 20px 0;">
   <p style="color: #6b7280; font-size: 12px;">Generated autonomously in 60 seconds by <a href="https://www.scrapetra.com" style="color: #3b82f6;">ScrapeTra</a>. Build your own list at <a href="https://www.scrapetra.com/dashboard" style="color: #3b82f6;">scrapetra.com</a></p>
+  <p style="color: #9ca3af; font-size: 11px; margin-top: 12px;">ScrapeTra | London, UK | To opt out of future marketing emails, email <a href="mailto:unsubscribe@scrapetra.com" style="color: #9ca3af;">unsubscribe@scrapetra.com</a></p>
 </body>
 </html>"""
 

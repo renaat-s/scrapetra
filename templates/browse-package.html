@@ -170,10 +170,7 @@
       <div class="detail-price">{{ symbol }}{{ '%.0f' | format(package.price) }} <span>/ package</span></div>
       <p class="detail-desc">{{ lead_count }} verified B2B email leads in {{ package.city }}. Delivered as CSV within 60 seconds.</p>
 
-      <form method="POST" action="/login">
-        <input type="hidden" name="next" value="/browse/{{ package.id }}">
-        <button type="submit" class="btn-buy">Buy Now — {{ symbol }}{{ '%.0f' | format(package.price) }}</button>
-      </form>
+      <button class="btn-buy" onclick="buyPackage()">Buy Now — {{ symbol }}{{ '%.0f' | format(package.price) }}</button>
 
       <div class="features-grid">
         <div class="feature-item"><span class="feature-icon">&#x2713;</span><span class="feature-text">Company name & URL</span></div>
@@ -212,5 +209,28 @@
     <p>&copy; 2026 ScrapeTra. All rights reserved. | <a href="/privacy">Privacy</a> | <a href="/terms">Terms</a></p>
     <p style="margin-top:.5rem">A Nanoclone Systems Product</p>
   </div>
+
+  <script>
+  async function buyPackage() {
+    const btn = document.querySelector('.btn-buy');
+    btn.textContent = 'Redirecting to checkout...';
+    btn.disabled = true;
+    try {
+      const res = await fetch('/api/packages/{{ package.id }}/checkout-stripe', { method: 'POST' });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert('Checkout failed: ' + (data.detail || 'Unknown error'));
+        btn.textContent = 'Buy Now — {{ symbol }}{{ "%.0f"|format(package.price) }}';
+        btn.disabled = false;
+      }
+    } catch (e) {
+      alert('Payment error. Please try again.');
+      btn.textContent = 'Buy Now — {{ symbol }}{{ "%.0f"|format(package.price) }}';
+      btn.disabled = false;
+    }
+  }
+  </script>
 </body>
 </html>

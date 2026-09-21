@@ -34,6 +34,11 @@ The CSV is delivered to your email within 60 seconds of payment. Every email was
 ${sender_name}
 ScrapeTra — Autonomous Lead Intelligence
 scrapetra.com
+
+--
+ScrapeTra | London, UK
+You received this targeted B2B introductory email because your business matches our active industry tracking.
+To opt out of future updates, click here: ${unsubscribe_url}
 """),
 
     "premium": Template("""Subject: ${lead_count} exclusive ${category} contacts in ${city} — verified today
@@ -62,6 +67,11 @@ Best,
 ${sender_name}
 ScrapeTra — Autonomous Lead Intelligence
 scrapetra.com
+
+--
+ScrapeTra | London, UK
+You received this targeted B2B introductory email because your business matches our active industry tracking.
+To opt out of future updates, click here: ${unsubscribe_url}
 """),
 
     "buyer-outreach": Template("""Subject: Fresh ${city} ${category} lead list — ${lead_count} verified contacts
@@ -86,6 +96,40 @@ If you're prospecting in ${city}, this is the fastest way to get a clean list.
 ${sender_name}
 ScrapeTra — Autonomous Lead Intelligence
 scrapetra.com
+
+--
+ScrapeTra | London, UK
+You received this targeted B2B introductory email because your business matches our active industry tracking.
+To opt out of future updates, click here: ${unsubscribe_url}
+"""),
+
+    "step2-followup": Template("""Subject: Re: Fresh ${category} leads in ${city} — still available
+
+Hi,
+
+Quick follow-up on my earlier email. The ${lead_count} verified ${category} leads I scraped for ${city} are still sitting in your queue.
+
+I know inboxes get buried. Here's the quick version:
+
+- ${lead_count} ${category} businesses in ${city}
+- Every email MX-verified against DNS records (zero bounces)
+- CSV delivered instantly after payment
+- One-time price: ${symbol}${price} — no subscription
+
+This data was scraped fresh on the day you receive this email. It's not recycled from a broker database.
+
+View package & buy now: ${browse_url}
+
+If you've already purchased, disregard this — your CSV was delivered instantly.
+
+Best regards,
+The ScrapeTra Agent
+ScrapeTra — Autonomous Lead Intelligence
+scrapetra.com
+
+--
+ScrapeTra | London, UK
+To opt out of future updates, click here: ${unsubscribe_url}
 """),
 }
 
@@ -138,6 +182,7 @@ def generate_pitch_email(
     currency: str = "GBP",
     symbol: str = "\u00a3",
     browse_url: str = "",
+    unsubscribe_url: str = "",
 ) -> dict:
     tmpl = OUTREACH_TEMPLATES.get(template_style, OUTREACH_TEMPLATES["standard"])
 
@@ -159,6 +204,7 @@ def generate_pitch_email(
         ref=ref,
         sender_name=sender_name,
         browse_url=browse_url or "#",
+        unsubscribe_url=unsubscribe_url or "#",
     )
 
     subject_line = body.split("\n")[0].replace("Subject: ", "")
@@ -236,3 +282,35 @@ async def _mark_campaign_delivered(campaign_id: str, buyer_email: str):
             "UPDATE campaigns SET status = 'delivered', buyer_email = $1, delivered_at = $2 WHERE id = $3",
             buyer_email, datetime.utcnow().isoformat(), campaign_id,
         )
+
+
+def generate_drip_email(
+    lead: dict,
+    lead_count: int,
+    category: str,
+    city: str,
+    price: float,
+    sender_name: str,
+    symbol: str = "£",
+    browse_url: str = "",
+    unsubscribe_url: str = "",
+) -> dict:
+    tmpl = OUTREACH_TEMPLATES["step2-followup"]
+    body = tmpl.safe_substitute(
+        lead_count=lead_count,
+        category=category,
+        city=city,
+        price=f"{price:.2f}",
+        symbol=symbol,
+        sender_name=sender_name,
+        browse_url=browse_url or "#",
+        unsubscribe_url=unsubscribe_url or "#",
+    )
+    subject_line = body.split("\n")[0].replace("Subject: ", "")
+    body_lines = body.split("\n")[1:]
+    body_text = "\n".join(body_lines).strip()
+    return {
+        "to": lead.get("email", ""),
+        "subject": subject_line,
+        "body": body_text,
+    }

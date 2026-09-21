@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unsubscribed | ScrapeTra</title>
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg: #030712; --text: #fff; --text2: rgba(255,255,255,.6); --blue: #3b82f6; --border: rgba(255,255,255,.06); }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: "Instrument Sans", system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .card { max-width: 500px; margin: 2rem; padding: 3rem; border-radius: 24px; background: rgba(255,255,255,.03); border: 1px solid var(--border); text-align: center; }
+    .icon { font-size: 3rem; margin-bottom: 1rem; }
+    h1 { font-size: 1.8rem; margin-bottom: .75rem; background: linear-gradient(135deg, #fff, #94a3b8); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    p { color: var(--text2); font-size: 1rem; margin-bottom: 1.5rem; }
+    .email { color: var(--blue); font-weight: 600; }
+    a.back { display: inline-block; color: var(--blue); font-weight: 600; font-size: .9rem; }
+    a.back:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">&#x2713;</div>
+    <h1>You've been unsubscribed</h1>
+    {% if email %}
+    <p>The address <span class="email">{{ email }}</span> has been removed from our distribution list. You will no longer receive outreach emails from ScrapeTra.</p>
+    {% else %}
+    <p>You have been removed from our distribution list. You will no longer receive outreach emails from ScrapeTra.</p>
+    {% endif %}
+    <p style="font-size:.85rem">This action was processed instantly. If this was a mistake, please contact us at <a href="mailto:info@scrapetra.com" style="color:var(--blue)">info@scrapetra.com</a>.</p>
+    <a href="/" class="back">&larr; Back to ScrapeTra</a>
+  </div>
+</body>
+</html>
