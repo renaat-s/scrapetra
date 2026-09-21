@@ -20,9 +20,10 @@ from config import (
     API_KEY, EXPORT_DIR, STRIPE_PUBLISHABLE_KEY,
     STRIPE_WEBHOOK_SECRET, ALLOWED_ORIGINS,
     PAYPAL_CLIENT_ID, BANK_SORT_CODE, BANK_ACCOUNT,
-    DEFAULT_LEAD_PRICE, SENDER_NAME,
+    DEFAULT_LEAD_PRICE, SENDER_NAME, SENDER_EMAIL,
     REGIONS, SCRAPE_TARGETS, PACKAGE_LEAD_COUNT,
     ADMIN_PASSWORD, SESSION_SECRET, SESSION_MAX_AGE, BASE_URL,
+    SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS,
 )
 from database import (
     init_db, create_search, update_search_status, insert_leads,
@@ -120,6 +121,34 @@ async def landing(request: Request):
 @app.get("/health")
 async def health_check():
     return {"status": "ok", "service": "scrapetra"}
+
+
+@app.get("/api/diagnostics")
+async def diagnostics(request: Request):
+    api_key = request.headers.get("X-API-Key", "") or request.query_params.get("api_key", "")
+    if api_key != API_KEY:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    smtp_ok = bool(SMTP_USER and SMTP_PASS)
+    smtp_error = None
+    if smtp_ok:
+        try:
+            import smtplib
+            with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as server:
+                server.ehlo()
+                server.starttls()
+                server.ehlo()
+                server.login(SMTP_USER, SMTP_PASS)
+        except Exception as e:
+            smtp_error = str(e)
+            smtp_ok = False
+    return {
+        "smtp_configured": smtp_ok,
+        "smtp_host": SMTP_HOST,
+        "smtp_port": SMTP_PORT,
+        "smtp_user": SMTP_USER or "(not set)",
+        "sender_email": SENDER_EMAIL or "(not set)",
+        "smtp_error": smtp_error,
+    }
 
 
 @app.get("/leads/{region}/{city_slug}", response_class=HTMLResponse)
@@ -348,7 +377,8 @@ async def _run_campaign(
         leads = await get_leads(campaign_id)
         valid_leads = [l for l in leads if l.get("email") and l.get("email_valid")]
         if valid_leads:
-            region = campaign.get("region", "uk")
+            campaign = await get_campaign(campaign_id)
+            region = (campaign or {}).get("region", "uk")
             region_cfg = REGIONS.get(region, REGIONS["uk"])
             browse_base = origin.replace("http://", "https://").replace("127.0.0.1", "www.scrapetra.com")
             emails_sent = 0
