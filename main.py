@@ -344,6 +344,45 @@ async def _run_campaign(
             bank_account=BANK_ACCOUNT,
             bank_ref=f"ST-{campaign_id[:8].upper()}",
         )
+
+        leads = await get_leads(campaign_id)
+        valid_leads = [l for l in leads if l.get("email") and l.get("email_valid")]
+        if valid_leads:
+            region = campaign.get("region", "uk")
+            region_cfg = REGIONS.get(region, REGIONS["uk"])
+            browse_base = origin.replace("http://", "https://").replace("127.0.0.1", "www.scrapetra.com")
+            emails_sent = 0
+            for lead in valid_leads:
+                lead_email = lead.get("email", "")
+                if await is_email_unsubscribed(lead_email):
+                    continue
+                unsub_url = generate_unsubscribe_url(lead_email, browse_base=browse_base)
+                pitch = generate_pitch_email(
+                    lead=lead,
+                    lead_count=len(valid_leads),
+                    category=category,
+                    city=city,
+                    price=price,
+                    sender_name=SENDER_NAME,
+                    stripe_url=stripe_url,
+                    paypal_url=paypal_url,
+                    sort_code=BANK_SORT_CODE,
+                    account_number=BANK_ACCOUNT,
+                    template_style=template_style,
+                    currency=region_cfg["currency"],
+                    symbol=region_cfg["symbol"],
+                    browse_url=f"{browse_base}/browse?region={region}",
+                    unsubscribe_url=unsub_url,
+                )
+                log_id = await log_outreach(campaign_id, pitch["to"], pitch["subject"])
+                sent = send_pitch_email(pitch["to"], pitch["subject"], pitch["body"])
+                await update_outreach_status(log_id, "sent" if sent else "failed")
+                if sent:
+                    emails_sent += 1
+                await asyncio.sleep(1)
+            await update_campaign(campaign_id, status="pitched", emails_sent=emails_sent)
+        else:
+            await update_campaign(campaign_id, status="pitched", emails_sent=0)
     except Exception as e:
         import traceback
         tb = traceback.format_exc()
