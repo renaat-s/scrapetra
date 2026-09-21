@@ -1,3 +1,4 @@
+import os
 import smtplib
 import logging
 from email.mime.text import MIMEText
@@ -7,10 +8,36 @@ from config import SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SENDER_EMAIL, SEN
 
 logger = logging.getLogger("scrapetra.emailer")
 
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY", "")
 
-def send_email(to: str, subject: str, body: str, html: str = "") -> bool:
+
+def _send_via_sendgrid(to: str, subject: str, body: str, html: str = "") -> bool:
+    if not SENDGRID_API_KEY:
+        return False
+    try:
+        from sendgrid import SendGridAPIClient
+        from sendgrid.helpers.mail import Mail, Email, To, Content
+
+        message = Mail(
+            from_email=Email(SENDER_EMAIL),
+            to_emails=To(to),
+            subject=subject,
+            plain_text_content=Content("text/plain", body),
+            html_content=Content("text/html", html) if html else None,
+        )
+        message.reply_to = Email(SENDER_EMAIL)
+
+        sg = SendGridAPIClient(SENDGRID_API_KEY)
+        sg.send(message)
+        logger.info("Email sent via SendGrid to %s", to)
+        return True
+    except Exception as e:
+        logger.error("SendGrid failed for %s: %s", to, e)
+        return False
+
+
+def _send_via_smtp(to: str, subject: str, body: str, html: str = "") -> bool:
     if not SMTP_USER or not SMTP_PASS:
-        logger.warning("SMTP not configured - email not sent to %s", to)
         return False
 
     msg = MIMEMultipart("alternative")
@@ -20,7 +47,6 @@ def send_email(to: str, subject: str, body: str, html: str = "") -> bool:
     msg["Reply-To"] = SENDER_EMAIL
 
     msg.attach(MIMEText(body, "plain"))
-
     if html:
         msg.attach(MIMEText(html, "html"))
 
@@ -31,11 +57,20 @@ def send_email(to: str, subject: str, body: str, html: str = "") -> bool:
             server.ehlo()
             server.login(SMTP_USER, SMTP_PASS)
             server.sendmail(SENDER_EMAIL, to, msg.as_string())
-        logger.info("Email sent to %s", to)
+        logger.info("Email sent via SMTP to %s", to)
         return True
     except Exception as e:
-        logger.error("Failed to send email to %s: %s", to, e)
+        logger.error("SMTP failed for %s: %s", to, e)
         return False
+
+
+def send_email(to: str, subject: str, body: str, html: str = "") -> bool:
+    if _send_via_sendgrid(to, subject, body, html):
+        return True
+    if _send_via_smtp(to, subject, body, html):
+        return True
+    logger.error("All email backends failed for %s", to)
+    return False
 
 
 def send_csv_delivery(

@@ -128,6 +128,17 @@ async def diagnostics(request: Request):
     api_key = request.headers.get("X-API-Key", "") or request.query_params.get("api_key", "")
     if api_key != API_KEY:
         raise HTTPException(status_code=401, detail="Invalid API key")
+    sendgrid_key = os.getenv("SENDGRID_API_KEY", "")
+    sendgrid_ok = False
+    sendgrid_error = None
+    if sendgrid_key:
+        try:
+            from sendgrid import SendGridAPIClient
+            sg = SendGridAPIClient(sendgrid_key)
+            sg.client.version.GET("v3/user/account")
+            sendgrid_ok = True
+        except Exception as e:
+            sendgrid_error = str(e)
     smtp_ok = bool(SMTP_USER and SMTP_PASS)
     smtp_error = None
     if smtp_ok:
@@ -142,6 +153,9 @@ async def diagnostics(request: Request):
             smtp_error = str(e)
             smtp_ok = False
     return {
+        "sendgrid_configured": sendgrid_ok,
+        "sendgrid_key_set": bool(sendgrid_key),
+        "sendgrid_error": sendgrid_error,
         "smtp_configured": smtp_ok,
         "smtp_host": SMTP_HOST,
         "smtp_port": SMTP_PORT,
