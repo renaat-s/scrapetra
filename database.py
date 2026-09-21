@@ -55,13 +55,16 @@ async def init_db():
             """)
             await db.execute("""
                 DO $$
+                DECLARE
+                    conname text;
                 BEGIN
-                    IF EXISTS (
-                        SELECT 1 FROM information_schema.table_constraints
-                        WHERE constraint_name = 'leads_search_id_fkey'
-                    ) THEN
-                        ALTER TABLE leads DROP CONSTRAINT leads_search_id_fkey;
-                    END IF;
+                    FOR conname IN
+                        SELECT conname FROM pg_constraint
+                        WHERE conrelid = 'leads'::regclass
+                          AND confrelid = 'searches'::regclass
+                    LOOP
+                        EXECUTE 'ALTER TABLE leads DROP CONSTRAINT ' || conname;
+                    END LOOP;
                 END $$;
             """)
             await db.execute("""

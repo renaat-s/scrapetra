@@ -59,18 +59,26 @@ def extract_emails_from_text(text: str) -> list[str]:
 
 def _ddg_search_sync(keyword: str, max_results: int, region: str = "uk-en") -> list[dict]:
     results = []
-    with DDGS() as ddgs:
-        for r in ddgs.text(keyword, max_results=max_results, region=region):
-            results.append({
-                "title": r.get("title", ""),
-                "url": r.get("href", ""),
-                "snippet": r.get("body", ""),
-            })
+    try:
+        with DDGS() as ddgs:
+            for r in ddgs.text(keyword, max_results=max_results, region=region, backend="ddg"):
+                results.append({
+                    "title": r.get("title", ""),
+                    "url": r.get("href", ""),
+                    "snippet": r.get("body", ""),
+                })
+    except Exception:
+        pass
     return results
 
 
 async def search_web(keyword: str, max_results: int = 10, region: str = "uk-en") -> list[dict]:
-    return await asyncio.to_thread(_ddg_search_sync, keyword, max_results, region)
+    for attempt in range(3):
+        results = await asyncio.to_thread(_ddg_search_sync, keyword, max_results, region)
+        if results:
+            return results
+        await asyncio.sleep(5 * (attempt + 1))
+    return []
 
 
 async def scrape_company_page(url: str, client: httpx.AsyncClient) -> dict:
