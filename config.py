@@ -9,6 +9,8 @@ PAYPAL_CLIENT_ID = os.getenv("PAYPAL_CLIENT_ID", "")
 PAYPAL_SECRET = os.getenv("PAYPAL_SECRET", "")
 PAYPAL_MODE = os.getenv("PAYPAL_MODE", "sandbox")
 
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
+
 API_KEY = os.getenv("SCRAPETRA_API_KEY", "scrapetra-demo-key-2026")
 
 EXPORT_DIR = os.path.join(os.path.dirname(__file__), "exports")

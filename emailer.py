@@ -1,73 +1,46 @@
 import os
-import smtplib
 import logging
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import requests
 
-from config import SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SENDER_EMAIL, SENDER_NAME
+from config import RESEND_API_KEY, SENDER_EMAIL, SENDER_NAME
 
 logger = logging.getLogger("scrapetra.emailer")
 
-SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY", "")
+RESEND_API_URL = "https://api.resend.com/emails"
 
 
-def _send_via_sendgrid(to: str, subject: str, body: str, html: str = "") -> bool:
-    if not SENDGRID_API_KEY:
+def _send_via_resend(to: str, subject: str, body: str, html: str = "") -> bool:
+    api_key = os.getenv("RESEND_API_KEY", "")
+    if not api_key:
+        logger.warning("RESEND_API_KEY not configured")
         return False
     try:
-        from sendgrid import SendGridAPIClient
-        from sendgrid.helpers.mail import Mail, Email, To, Content
-
-        message = Mail(
-            from_email=Email(SENDER_EMAIL),
-            to_emails=To(to),
-            subject=subject,
-            plain_text_content=Content("text/plain", body),
-            html_content=Content("text/html", html) if html else None,
+        payload = {
+            "from": f"{SENDER_NAME} <{SENDER_EMAIL}>",
+            "to": to,
+            "subject": subject,
+            "html": html if html else body,
+            "text": body,
+        }
+        resp = requests.post(
+            RESEND_API_URL,
+            json=payload,
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            timeout=15,
         )
-        message.reply_to = Email(SENDER_EMAIL)
-
-        sg = SendGridAPIClient(SENDGRID_API_KEY)
-        sg.send(message)
-        logger.info("Email sent via SendGrid to %s", to)
-        return True
+        if resp.status_code == 200:
+            logger.info("Email sent via Resend to %s", to)
+            return True
+        else:
+            logger.error("Resend failed for %s: %s", to, resp.text[:200])
+            return False
     except Exception as e:
-        logger.error("SendGrid failed for %s: %s", to, e)
-        return False
-
-
-def _send_via_smtp(to: str, subject: str, body: str, html: str = "") -> bool:
-    if not SMTP_USER or not SMTP_PASS:
-        return False
-
-    msg = MIMEMultipart("alternative")
-    msg["From"] = f"{SENDER_NAME} <{SENDER_EMAIL}>"
-    msg["To"] = to
-    msg["Subject"] = subject
-    msg["Reply-To"] = SENDER_EMAIL
-
-    msg.attach(MIMEText(body, "plain"))
-    if html:
-        msg.attach(MIMEText(html, "html"))
-
-    try:
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=15) as server:
-            server.ehlo()
-            server.starttls()
-            server.ehlo()
-            server.login(SMTP_USER, SMTP_PASS)
-            server.sendmail(SENDER_EMAIL, to, msg.as_string())
-        logger.info("Email sent via SMTP to %s", to)
-        return True
-    except Exception as e:
-        logger.error("SMTP failed for %s: %s", to, e)
+        logger.error("Resend failed for %s: %s", to, e)
         return False
 
 
 def send_email(to: str, subject: str, body: str, html: str = "") -> bool:
-    if _send_via_sendgrid(to, subject, body, html):
-        return True
-    if _send_via_smtp(to, subject, body, html):
+    if _send_via_resend(to, subject, body, html):
         return True
     logger.error("All email backends failed for %s", to)
     return False

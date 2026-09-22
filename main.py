@@ -6,6 +6,7 @@ import hmac
 import hashlib
 import logging
 import os
+import requests
 from collections import defaultdict
 from fastapi import FastAPI, Request, Form, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -23,7 +24,7 @@ from config import (
     DEFAULT_LEAD_PRICE, SENDER_NAME, SENDER_EMAIL,
     REGIONS, SCRAPE_TARGETS, PACKAGE_LEAD_COUNT,
     ADMIN_PASSWORD, SESSION_SECRET, SESSION_MAX_AGE, BASE_URL,
-    SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS,
+    RESEND_API_KEY,
 )
 from database import (
     init_db, create_search, update_search_status, insert_leads,
@@ -128,40 +129,26 @@ async def diagnostics(request: Request):
     api_key = request.headers.get("X-API-Key", "") or request.query_params.get("api_key", "")
     if api_key != API_KEY:
         raise HTTPException(status_code=401, detail="Invalid API key")
-    sendgrid_key = os.getenv("SENDGRID_API_KEY", "")
-    sendgrid_ok = False
-    sendgrid_error = None
-    if sendgrid_key:
+    resend_ok = bool(RESEND_API_KEY)
+    resend_error = None
+    if resend_ok:
         try:
-            from sendgrid import SendGridAPIClient
-            sg = SendGridAPIClient(sendgrid_key)
-            sg.client.version.GET("v3/user/account")
-            sendgrid_ok = True
+            resp = requests.post(
+                "https://api.resend.com/emails",
+                json={"from": f"ScrapeTra <{SENDER_EMAIL}>", "to": SENDER_EMAIL, "subject": "ScrapeTra Diagnostic", "text": "Test"},
+                headers={"Authorization": f"Bearer {RESEND_API_KEY}", "Content-Type": "application/json"},
+                timeout=10,
+            )
+            if resp.status_code != 200:
+                resend_error = resp.text[:200]
+                resend_ok = False
         except Exception as e:
-            sendgrid_error = str(e)
-    smtp_ok = bool(SMTP_USER and SMTP_PASS)
-    smtp_error = None
-    if smtp_ok:
-        try:
-            import smtplib
-            with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as server:
-                server.ehlo()
-                server.starttls()
-                server.ehlo()
-                server.login(SMTP_USER, SMTP_PASS)
-        except Exception as e:
-            smtp_error = str(e)
-            smtp_ok = False
+            resend_error = str(e)
+            resend_ok = False
     return {
-        "sendgrid_configured": sendgrid_ok,
-        "sendgrid_key_set": bool(sendgrid_key),
-        "sendgrid_error": sendgrid_error,
-        "smtp_configured": smtp_ok,
-        "smtp_host": SMTP_HOST,
-        "smtp_port": SMTP_PORT,
-        "smtp_user": SMTP_USER or "(not set)",
+        "resend_configured": resend_ok,
         "sender_email": SENDER_EMAIL or "(not set)",
-        "smtp_error": smtp_error,
+        "resend_error": resend_error,
     }
 
 
