@@ -45,7 +45,7 @@ from outreach import (
     run_outreach_campaign, generate_pitch_email, fulfill_delivery,
     generate_drip_email,
 )
-from emailer import send_pitch_email, send_csv_delivery
+from emailer import send_pitch_email, send_drip_email, send_csv_delivery
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("scrapetra.main")
@@ -406,7 +406,7 @@ async def _run_campaign(
                     unsubscribe_url=unsub_url,
                 )
                 log_id = await log_outreach(campaign_id, pitch["to"], pitch["subject"])
-                sent = send_pitch_email(pitch["to"], pitch["subject"], pitch["body"])
+                sent = send_pitch_email(pitch["to"], pitch["subject"], pitch["body"], pitch.get("html", ""))
                 await update_outreach_status(log_id, "sent" if sent else "failed")
                 if sent:
                     emails_sent += 1
@@ -496,8 +496,8 @@ async def send_campaign_pitch(
 
         log_id = await log_outreach(campaign_id, pitch["to"], pitch["subject"])
 
-        sent = send_pitch_email(pitch["to"], pitch["subject"], pitch["body"])
-        await update_outreach_status(log_id, "sent" if sent else "failed")
+sent = send_pitch_email(pitch["to"], pitch["subject"], pitch["body"], pitch.get("html", ""))
+            await update_outreach_status(log_id, "sent" if sent else "failed")
         if sent:
             emails_sent += 1
 
@@ -816,7 +816,7 @@ async def process_drips(request: Request):
             )
 
             log_id = await log_outreach(cid, drip["to"], drip["subject"])
-            sent = send_pitch_email(drip["to"], drip["subject"], drip["body"])
+            sent = send_drip_email(drip["to"], drip["subject"], drip["body"], drip.get("html", ""))
             await update_outreach_status(log_id, "sent" if sent else "failed")
             if sent:
                 emails_sent += 1
