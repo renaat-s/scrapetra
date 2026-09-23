@@ -496,8 +496,8 @@ async def send_campaign_pitch(
 
         log_id = await log_outreach(campaign_id, pitch["to"], pitch["subject"])
 
-sent = send_pitch_email(pitch["to"], pitch["subject"], pitch["body"], pitch.get("html", ""))
-            await update_outreach_status(log_id, "sent" if sent else "failed")
+        sent = send_pitch_email(pitch["to"], pitch["subject"], pitch["body"], pitch.get("html", ""))
+        await update_outreach_status(log_id, "sent" if sent else "failed")
         if sent:
             emails_sent += 1
 
