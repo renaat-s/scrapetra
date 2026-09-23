@@ -76,7 +76,7 @@ You received this email because you purchased a lead package from ScrapeTra.
 To opt out of future marketing emails, email unsubscribe@scrapetra.com with your email address.
 """
 
-        html = f"""<body style="margin:0;padding:0;background:#0a0a0a;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#ffffff;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:40px 0;"><tr><td align="center"><table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background:rgba(255,255,255,0.05);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(59,130,246,0.2);border-radius:20px;overflow:hidden;"><tr><td style="padding:30px 40px;">
+    html = f"""<body style="margin:0;padding:0;background:#0a0a0a;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#ffffff;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:40px 0;"><tr><td align="center"><table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background:rgba(255,255,255,0.05);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(59,130,246,0.2);border-radius:20px;overflow:hidden;"><tr><td style="padding:30px 40px;">
 <h2 style="color:#3b82f6;font-size:22px;margin:0 0 20px 0;text-align:center;">ScrapeTra — Autonomous Lead Intelligence</h2>
 <div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:12px;padding:20px;margin:20px 0;">
 <p style="font-size:16px;margin:0 0 12px 0;">Your lead data from <strong>{campaign_name}</strong> is ready.</p>
