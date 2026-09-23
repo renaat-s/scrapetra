@@ -56,14 +56,14 @@ async def init_db():
             await db.execute("""
                 DO $$
                 DECLARE
-                    conname text;
+                    constraint_name text;
                 BEGIN
-                    FOR conname IN
-                        SELECT conname FROM pg_constraint
-                        WHERE conrelid = 'leads'::regclass
-                          AND confrelid = 'searches'::regclass
+                    FOR constraint_name IN
+                        SELECT c.conname FROM pg_constraint c
+                        WHERE c.conrelid = 'leads'::regclass
+                          AND c.confrelid = 'searches'::regclass
                     LOOP
-                        EXECUTE 'ALTER TABLE leads DROP CONSTRAINT ' || conname;
+                        EXECUTE 'ALTER TABLE leads DROP CONSTRAINT ' || quote_ident(constraint_name);
                     END LOOP;
                 END $$;
             """)
