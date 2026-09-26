@@ -18,16 +18,18 @@ BASE_CSS = """
 <body style="margin:0;padding:0;background:#0a0a0a;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#ffffff;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:40px 0;">
 <tr><td align="center">
-<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background:rgba(255,255,255,0.05);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(59,130,246,0.2);border-radius:20px;overflow:hidden;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background:rgba(255,255,255,0.06);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(59,130,246,0.4);border-radius:20px;overflow:hidden;">
 <tr><td style="padding:0;">"""
 
 FOOTER_HTML = """
 </td></tr>
-<tr><td style="padding:30px 40px;background:rgba(0,0,0,0.3);border-top:1px solid rgba(59,130,246,0.1);text-align:center;">
+<tr><td style="padding:30px 40px;background:rgba(0,0,0,0.3);border-top:1px solid rgba(59,130,246,0.2);text-align:center;">
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
 <tr>
-<td style="padding-right:20px;"><img src="%s" alt="ScrapeTra Logo" width="120" style="display:block;"></td>
-<td style="padding-left:20px;border-left:1px solid rgba(255,255,255,0.1);"><img src="%s" alt="NanoClone Logo" width="120" style="display:block;"></td>
+<td colspan="2" style="text-align:center;padding:0 0 16px 0;"><img src="%s" alt="ScrapeTra Logo" width="140" style="display:block;margin:0 auto;"></td>
+</tr>
+<tr>
+<td colspan="2" style="text-align:center;"><img src="%s" alt="NanoClone Logo" width="180" style="display:block;margin:0 auto;"></td>
 </tr>
 </table>
 <p style="color:#9ca3af;font-size:11px;margin:16px 0 8px 0;">ScrapeTra — Autonomous Lead Intelligence</p>
@@ -70,8 +72,10 @@ The CSV is delivered to your email within 60 seconds of payment. Every email was
 ${sender_name}
 ScrapeTra — Autonomous Lead Intelligence
 scrapetra.com"""),
-        "html": Template("""<h2 style="color:#3b82f6;font-size:22px;margin:0 0 20px 0;text-align:center;">ScrapeTra — Autonomous Lead Intelligence</h2>
-<div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:12px;padding:20px;margin:20px 0;">
+        "html": Template("""<img src="%s" alt="ScrapeTra Logo" width="100" style="display:block;margin:0 auto 20px auto;">
+<h1 style="color:#3b82f6;font-size:32px;margin:0 0 4px 0;text-align:center;font-weight:800;letter-spacing:-0.5px;">ScrapeTra</h1>
+<p style="color:#60a5fa;font-size:14px;margin:0 0 24px 0;text-align:center;font-weight:400;letter-spacing:1px;">Autonomous Lead Intelligence</p>
+<div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.4);border-radius:12px;padding:20px;margin:20px 0;">
 <p style="font-size:16px;margin:0 0 12px 0;">ScrapeTra just completed a fresh scrape of <strong>${category}</strong> businesses in <strong>${city}</strong>.</p>
 <p style="font-size:15px;margin:0;">${lead_count} companies, each with a syntax-verified, MX-validated email address.</p>
 </div>
@@ -84,7 +88,7 @@ scrapetra.com"""),
 <li>MX record validation status</li>
 </ul>
 </div>
-<div style="background:rgba(59,130,246,0.15);border-radius:12px;padding:20px;margin:20px 0;text-align:center;">
+<div style="background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);border-radius:12px;padding:20px;margin:20px 0;text-align:center;">
 <p style="font-size:20px;margin:0 0 10px 0;"><strong>Price: ${symbol}${price}</strong> <span style="font-size:13px;color:#9ca3af;">(one-time, no subscription)</span></p>
 <p style="font-size:14px;margin:0;">${lead_count} verified ${category} leads in ${city}</p>
 </div>
@@ -118,8 +122,10 @@ If you sell to ${category} companies in ${city}, this saves you hours of manual 
 Best,
 ${sender_name}
 ScrapeTra — Autonomous Lead Intelligence"""),
-        "html": Template("""<h2 style="color:#3b82f6;font-size:22px;margin:0 0 20px 0;text-align:center;">ScrapeTra — Autonomous Lead Intelligence</h2>
-<div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:12px;padding:20px;margin:20px 0;">
+        "html": Template("""<img src="%s" alt="ScrapeTra Logo" width="100" style="display:block;margin:0 auto 20px auto;">
+<h1 style="color:#3b82f6;font-size:32px;margin:0 0 4px 0;text-align:center;font-weight:800;letter-spacing:-0.5px;">ScrapeTra</h1>
+<p style="color:#60a5fa;font-size:14px;margin:0 0 24px 0;text-align:center;font-weight:400;letter-spacing:1px;">Autonomous Lead Intelligence</p>
+<div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.4);border-radius:12px;padding:20px;margin:20px 0;">
 <p style="font-size:16px;margin:0 0 12px 0;">I run ScrapeTra, an autonomous B2B lead generation agent.</p>
 <p style="font-size:15px;margin:0;">I just scraped and verified <strong>${lead_count}</strong> ${category} leads in <strong>${city}</strong>.</p>
 </div>
@@ -132,7 +138,7 @@ ScrapeTra — Autonomous Lead Intelligence"""),
 </ol>
 <p style="font-size:14px;margin:0;color:#d1d5db;">Traditional data brokers charge <strong>3-5x more</strong> for worse data.</p>
 </div>
-<div style="background:rgba(59,130,246,0.15);border-radius:12px;padding:20px;margin:20px 0;text-align:center;">
+<div style="background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);border-radius:12px;padding:20px;margin:20px 0;text-align:center;">
 <p style="font-size:20px;margin:0 0 10px 0;"><strong>Price: ${symbol}${price}</strong> <span style="font-size:13px;color:#9ca3af;">(one-time, no subscription)</span></p>
 </div>
 <a href="${browse_url}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:600;font-size:15px;margin:20px 0;">View Package & Buy Now</a>
@@ -161,8 +167,10 @@ If you're prospecting in ${city}, this is the fastest way to get a clean list.
 
 ${sender_name}
 ScrapeTra — Autonomous Lead Intelligence"""),
-        "html": Template("""<h2 style="color:#3b82f6;font-size:22px;margin:0 0 20px 0;text-align:center;">ScrapeTra — Autonomous Lead Intelligence</h2>
-<div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:12px;padding:20px;margin:20px 0;">
+        "html": Template("""<img src="%s" alt="ScrapeTra Logo" width="100" style="display:block;margin:0 auto 20px auto;">
+<h1 style="color:#3b82f6;font-size:32px;margin:0 0 4px 0;text-align:center;font-weight:800;letter-spacing:-0.5px;">ScrapeTra</h1>
+<p style="color:#60a5fa;font-size:14px;margin:0 0 24px 0;text-align:center;font-weight:400;letter-spacing:1px;">Autonomous Lead Intelligence</p>
+<div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.4);border-radius:12px;padding:20px;margin:20px 0;">
 <p style="font-size:16px;margin:0 0 12px 0;">I noticed you work in <strong>B2B sales / lead generation</strong>. I wanted to share something that might help.</p>
 </div>
 <div style="margin:20px 0;">
@@ -174,7 +182,7 @@ ScrapeTra — Autonomous Lead Intelligence"""),
 <li>Deliverability status</li>
 </ul>
 </div>
-<div style="background:rgba(59,130,246,0.15);border-radius:12px;padding:20px;margin:20px 0;text-align:center;">
+<div style="background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);border-radius:12px;padding:20px;margin:20px 0;text-align:center;">
 <p style="font-size:20px;margin:0;"><strong>Price: ${symbol}${price}</strong> — instant CSV delivery</p>
 </div>
 <a href="${browse_url}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:600;font-size:15px;margin:20px 0;">View Package & Buy Now</a>
@@ -204,8 +212,10 @@ If you've already purchased, disregard this — your CSV was delivered instantly
 Best regards,
 The ScrapeTra Agent
 ScrapeTra — Autonomous Lead Intelligence"""),
-        "html": Template("""<h2 style="color:#3b82f6;font-size:22px;margin:0 0 20px 0;text-align:center;">ScrapeTra — Autonomous Lead Intelligence</h2>
-<div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:12px;padding:20px;margin:20px 0;">
+        "html": Template("""<img src="%s" alt="ScrapeTra Logo" width="100" style="display:block;margin:0 auto 20px auto;">
+<h1 style="color:#3b82f6;font-size:32px;margin:0 0 4px 0;text-align:center;font-weight:800;letter-spacing:-0.5px;">ScrapeTra</h1>
+<p style="color:#60a5fa;font-size:14px;margin:0 0 24px 0;text-align:center;font-weight:400;letter-spacing:1px;">Autonomous Lead Intelligence</p>
+<div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.4);border-radius:12px;padding:20px;margin:20px 0;">
 <p style="font-size:16px;margin:0 0 12px 0;">Quick follow-up on my earlier email.</p>
 <p style="font-size:15px;margin:0;">The <strong>${lead_count}</strong> verified ${category} leads I scraped for <strong>${city}</strong> are still sitting in your queue.</p>
 </div>
