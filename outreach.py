@@ -26,10 +26,7 @@ FOOTER_HTML = """
 <tr><td style="padding:30px 40px;background:rgba(0,0,0,0.3);border-top:1px solid rgba(59,130,246,0.2);text-align:center;">
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
 <tr>
-<td colspan="2" style="text-align:center;padding:0 0 16px 0;"><img src="%s" alt="ScrapeTra Logo" width="140" style="display:block;margin:0 auto;"></td>
-</tr>
-<tr>
-<td colspan="2" style="text-align:center;"><img src="%s" alt="NanoClone Logo" width="180" style="display:block;margin:0 auto;"></td>
+<td style="text-align:center;"><img src="%s" alt="NanoClone Logo" width="200" style="display:block;margin:0 auto;"></td>
 </tr>
 </table>
 <p style="color:#9ca3af;font-size:11px;margin:16px 0 8px 0;">ScrapeTra — Autonomous Lead Intelligence</p>
@@ -46,7 +43,7 @@ This is an automated message from ScrapeTra. No human intervention was required.
 
 
 def _build_html(subject, body_html, unsubscribe_url):
-    return BASE_CSS + body_html + FOOTER_HTML % (SCRAPTRA_LOGO_URL, NANOCLONE_LOGO_URL, unsubscribe_url)
+    return BASE_CSS + body_html + FOOTER_HTML % (NANOCLONE_LOGO_URL, unsubscribe_url)
 
 
 OUTREACH_TEMPLATES = {
