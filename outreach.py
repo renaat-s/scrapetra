@@ -92,7 +92,7 @@ scrapetra.com"""),
 <p style="font-size:20px;margin:0 0 10px 0;"><strong>Price: ${symbol}${price}</strong> <span style="font-size:13px;color:#9ca3af;">(one-time, no subscription)</span></p>
 <p style="font-size:14px;margin:0;">${lead_count} verified ${category} leads in ${city}</p>
 </div>
-<a href="${browse_url}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:600;font-size:15px;margin:20px 0;">View Package & Buy Now</a>
+<div style="text-align:center;"><a href="${browse_url}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:600;font-size:15px;margin:20px 0;">View Package & Buy Now</a></div>
 <p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">The CSV is delivered to your email within 60 seconds of payment. Every email was checked against DNS MX records before inclusion. Zero bounces guaranteed.</p>
 <p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">${sender_name}<br>ScrapeTra — Autonomous Lead Intelligence<br>scrapetra.com</p>"""),
     },
@@ -141,7 +141,7 @@ ScrapeTra — Autonomous Lead Intelligence"""),
 <div style="background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);border-radius:12px;padding:20px;margin:20px 0;text-align:center;">
 <p style="font-size:20px;margin:0 0 10px 0;"><strong>Price: ${symbol}${price}</strong> <span style="font-size:13px;color:#9ca3af;">(one-time, no subscription)</span></p>
 </div>
-<a href="${browse_url}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:600;font-size:15px;margin:20px 0;">View Package & Buy Now</a>
+<div style="text-align:center;"><a href="${browse_url}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:600;font-size:15px;margin:20px 0;">View Package & Buy Now</a></div>
 <p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">The CSV is delivered to your email within seconds of payment. If you sell to ${category} companies in ${city}, this saves you hours of manual prospecting.</p>
 <p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">Best,<br>${sender_name}<br>ScrapeTra — Autonomous Lead Intelligence</p>"""),
     },
@@ -185,7 +185,7 @@ ScrapeTra — Autonomous Lead Intelligence"""),
 <div style="background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);border-radius:12px;padding:20px;margin:20px 0;text-align:center;">
 <p style="font-size:20px;margin:0;"><strong>Price: ${symbol}${price}</strong> — instant CSV delivery</p>
 </div>
-<a href="${browse_url}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:600;font-size:15px;margin:20px 0;">View Package & Buy Now</a>
+<div style="text-align:center;"><a href="${browse_url}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:600;font-size:15px;margin:20px 0;">View Package & Buy Now</a></div>
 <p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">If you're prospecting in ${city}, this is the fastest way to get a clean list.</p>
 <p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">${sender_name}<br>ScrapeTra — Autonomous Lead Intelligence</p>"""),
     },
@@ -229,7 +229,7 @@ ScrapeTra — Autonomous Lead Intelligence"""),
 </ul>
 <p style="font-size:13px;margin:0;color:#9ca3af;">This data was scraped fresh on the day you receive this email. It's not recycled from a broker database.</p>
 </div>
-<a href="${browse_url}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:600;font-size:15px;margin:20px 0;">View Package & Buy Now</a>
+<div style="text-align:center;"><a href="${browse_url}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:600;font-size:15px;margin:20px 0;">View Package & Buy Now</a></div>
 <p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">If you've already purchased, disregard this — your CSV was delivered instantly.</p>
 <p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">Best regards,<br>The ScrapeTra Agent<br>ScrapeTra — Autonomous Lead Intelligence</p>"""),
     },
