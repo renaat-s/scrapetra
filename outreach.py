@@ -48,7 +48,7 @@ def _build_html(subject, body_html, unsubscribe_url):
 
 OUTREACH_TEMPLATES = {
     "standard": {
-        "subject": Template("Fresh ${lead_count} verified ${category} leads in ${city} — ready to buy"),
+        "subject": Template("Fresh ${lead_count} verified ${category} leads in ${city} — ${symbol}${trial_price} first package"),
         "body": Template("""Hi,
 
 ScrapeTra just completed a fresh scrape of ${category} businesses in ${city}. ${lead_count} companies, each with a syntax-verified, MX-validated email address.
@@ -60,11 +60,14 @@ What's in the CSV:
 - Verified email address
 - MX record validation status
 
-Price: ${symbol}${price} (one-time, no subscription)
+FIRST PACKAGE SPECIAL: ${symbol}${trial_price} (one-time, no subscription, no contracts)
+Regular price: ${symbol}${price}
 
-View package & buy now: ${browse_url}
+Only a limited number of spots remain per city. Price goes up Friday.
 
-The CSV is delivered to your email within 60 seconds of payment. Every email was checked against DNS MX records before inclusion. Zero bounces guaranteed.
+Your CSV is delivered within 60 seconds of payment. If we can't verify the emails, you don't pay.
+
+Get your leads now: ${browse_url}
 
 ${sender_name}
 ScrapeTra — Autonomous Lead Intelligence
@@ -76,8 +79,13 @@ scrapetra.com"""),
 <p style="font-size:16px;margin:0 0 12px 0;">ScrapeTra just completed a fresh scrape of <strong>${category}</strong> businesses in <strong>${city}</strong>.</p>
 <p style="font-size:15px;margin:0;">${lead_count} companies, each with a syntax-verified, MX-validated email address.</p>
 </div>
+<div style="background:linear-gradient(135deg,rgba(59,130,246,0.15),rgba(20,184,166,0.1));border:1px solid rgba(59,130,246,0.4);border-radius:12px;padding:20px;margin:20px 0;text-align:center;">
+<p style="font-size:24px;margin:0 0 5px 0;"><strong style="color:#10b981;">${symbol}${trial_price}</strong> <span style="font-size:14px;color:#9ca3af;">first package</span></p>
+<p style="font-size:13px;margin:0;color:#9ca3af;">one-time &bull; no subscription &bull; no contracts</p>
+<p style="font-size:12px;margin:8px 0 0 0;text-decoration:line-through;color:#6b7280;">${symbol}${price} regular price</p>
+</div>
 <div style="margin:20px 0;">
-<p style="font-size:14px;margin:0 0 8px 0;">This is live data — scraped today, not recycled from a stale database.</p>
+<p style="font-size:14px;margin:0 0 8px 0;"><strong>Only a limited number of spots remain per city.</strong> Price increases Friday.</p>
 <p style="font-size:14px;margin:0 0 8px 0;"><strong>What's in the CSV:</strong></p>
 <ul style="font-size:14px;margin:0 0 20px 0;padding-left:20px;">
 <li>Company name & website URL</li>
@@ -85,17 +93,15 @@ scrapetra.com"""),
 <li>MX record validation status</li>
 </ul>
 </div>
-<div style="background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);border-radius:12px;padding:20px;margin:20px 0;text-align:center;">
-<p style="font-size:20px;margin:0 0 10px 0;"><strong>Price: ${symbol}${price}</strong> <span style="font-size:13px;color:#9ca3af;">(one-time, no subscription)</span></p>
-<p style="font-size:14px;margin:0;">${lead_count} verified ${category} leads in ${city}</p>
+<div style="background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.4);border-radius:12px;padding:20px;margin:20px 0;text-align:center;">
+<p style="font-size:14px;margin:0 0 10px 0;color:#9ca3af;">Your CSV is delivered within 60 seconds of payment. If we can't verify the emails, you don't pay.</p>
 </div>
-<div style="text-align:center;"><a href="${browse_url}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:600;font-size:15px;margin:20px 0;">View Package & Buy Now</a></div>
-<p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">The CSV is delivered to your email within 60 seconds of payment. Every email was checked against DNS MX records before inclusion. Zero bounces guaranteed.</p>
+<div style="text-align:center;"><a href="${browse_url}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:16px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px;margin:20px 0;">Get My Leads in 60 Seconds</a></div>
 <p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">${sender_name}<br>ScrapeTra — Autonomous Lead Intelligence<br>scrapetra.com</p>"""),
     },
 
     "premium": {
-        "subject": Template("${lead_count} exclusive ${category} contacts in ${city} — verified today"),
+        "subject": Template("${lead_count} exclusive ${category} contacts in ${city} — ${symbol}${trial_price} first package"),
         "body": Template("""Hi,
 
 I run ScrapeTra, an autonomous B2B lead generation agent. I just scraped and verified ${lead_count} ${category} leads in ${city}.
@@ -108,13 +114,16 @@ Here's what makes this different from bought lists:
 
 Traditional data brokers charge 3-5x more for worse data.
 
-ScrapeTra's price: ${symbol}${price} (one-time, no subscription)
+FIRST PACKAGE SPECIAL: ${symbol}${trial_price} (one-time, no subscription)
+Regular price: ${symbol}${price}
 
-View package & buy now: ${browse_url}
+Only a limited number of spots remain per city. Price goes up Friday.
 
 The CSV is delivered to your email within seconds of payment.
 
 If you sell to ${category} companies in ${city}, this saves you hours of manual prospecting.
+
+Get your leads now: ${browse_url}
 
 Best,
 ${sender_name}
@@ -135,16 +144,21 @@ ScrapeTra — Autonomous Lead Intelligence"""),
 </ol>
 <p style="font-size:14px;margin:0;color:#d1d5db;">Traditional data brokers charge <strong>3-5x more</strong> for worse data.</p>
 </div>
-<div style="background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);border-radius:12px;padding:20px;margin:20px 0;text-align:center;">
-<p style="font-size:20px;margin:0 0 10px 0;"><strong>Price: ${symbol}${price}</strong> <span style="font-size:13px;color:#9ca3af;">(one-time, no subscription)</span></p>
+<div style="background:linear-gradient(135deg,rgba(59,130,246,0.15),rgba(20,184,166,0.1));border:1px solid rgba(59,130,246,0.4);border-radius:12px;padding:20px;margin:20px 0;text-align:center;">
+<p style="font-size:24px;margin:0 0 5px 0;"><strong style="color:#10b981;">${symbol}${trial_price}</strong> <span style="font-size:14px;color:#9ca3af;">first package</span></p>
+<p style="font-size:13px;margin:0;color:#9ca3af;">one-time &bull; no subscription &bull; no contracts</p>
+<p style="font-size:12px;margin:8px 0 0 0;text-decoration:line-through;color:#6b7280;">${symbol}${price} regular price</p>
 </div>
-<div style="text-align:center;"><a href="${browse_url}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:600;font-size:15px;margin:20px 0;">View Package & Buy Now</a></div>
+<div style="margin:20px 0;">
+<p style="font-size:14px;margin:0 0 8px 0;"><strong>Only a limited number of spots remain per city.</strong> Price increases Friday.</p>
+</div>
+<div style="text-align:center;"><a href="${browse_url}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:16px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px;margin:20px 0;">Get My Leads in 60 Seconds</a></div>
 <p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">The CSV is delivered to your email within seconds of payment. If you sell to ${category} companies in ${city}, this saves you hours of manual prospecting.</p>
 <p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">Best,<br>${sender_name}<br>ScrapeTra — Autonomous Lead Intelligence</p>"""),
     },
 
     "buyer-outreach": {
-        "subject": Template("Fresh ${city} ${category} lead list — ${lead_count} verified contacts"),
+        "subject": Template("Fresh ${city} ${category} lead list — ${lead_count} verified contacts, ${symbol}${trial_price} first package"),
         "body": Template("""Hey,
 
 I noticed you work in B2B sales / lead generation. I wanted to share something that might help.
@@ -156,9 +170,12 @@ Every record includes:
 - Verified business email (MX-validated)
 - Deliverability status
 
-Price: ${symbol}${price} — instant CSV delivery.
+FIRST PACKAGE SPECIAL: ${symbol}${trial_price} (one-time, no subscription)
+Regular price: ${symbol}${price}
 
-View package & buy now: ${browse_url}
+Only a limited number of spots remain per city. Price goes up Friday.
+
+Get your leads now: ${browse_url}
 
 If you're prospecting in ${city}, this is the fastest way to get a clean list.
 
@@ -179,16 +196,21 @@ ScrapeTra — Autonomous Lead Intelligence"""),
 <li>Deliverability status</li>
 </ul>
 </div>
-<div style="background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);border-radius:12px;padding:20px;margin:20px 0;text-align:center;">
-<p style="font-size:20px;margin:0;"><strong>Price: ${symbol}${price}</strong> — instant CSV delivery</p>
+<div style="background:linear-gradient(135deg,rgba(59,130,246,0.15),rgba(20,184,166,0.1));border:1px solid rgba(59,130,246,0.4);border-radius:12px;padding:20px;margin:20px 0;text-align:center;">
+<p style="font-size:24px;margin:0 0 5px 0;"><strong style="color:#10b981;">${symbol}${trial_price}</strong> <span style="font-size:14px;color:#9ca3af;">first package</span></p>
+<p style="font-size:13px;margin:0;color:#9ca3af;">one-time &bull; no subscription &bull; no contracts</p>
+<p style="font-size:12px;margin:8px 0 0 0;text-decoration:line-through;color:#6b7280;">${symbol}${price} regular price</p>
 </div>
-<div style="text-align:center;"><a href="${browse_url}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:600;font-size:15px;margin:20px 0;">View Package & Buy Now</a></div>
+<div style="margin:20px 0;">
+<p style="font-size:14px;margin:0 0 8px 0;"><strong>Only a limited number of spots remain per city.</strong> Price increases Friday.</p>
+</div>
+<div style="text-align:center;"><a href="${browse_url}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:16px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px;margin:20px 0;">Get My Leads in 60 Seconds</a></div>
 <p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">If you're prospecting in ${city}, this is the fastest way to get a clean list.</p>
 <p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">${sender_name}<br>ScrapeTra — Autonomous Lead Intelligence</p>"""),
     },
 
     "step2-followup": {
-        "subject": Template("Re: ${category} leads in ${city} — still available"),
+        "subject": Template("Re: ${category} leads in ${city} — ${symbol}${trial_price} first package, still available"),
         "body": Template("""Hi,
 
 Quick follow-up on my earlier email. The ${lead_count} verified ${category} leads I scraped for ${city} are still sitting in your queue.
@@ -198,11 +220,15 @@ I know inboxes get buried. Here's the quick version:
 - ${lead_count} ${category} businesses in ${city}
 - Every email MX-verified against DNS records (zero bounces)
 - CSV delivered instantly after payment
-- One-time price: ${symbol}${price} — no subscription
+- One-time price: ${symbol}${trial_price} first package — no subscription
+
+Regular price: ${symbol}${price}
+
+Only a limited number of spots remain per city. Price goes up Friday.
 
 This data was scraped fresh on the day you receive this email. It's not recycled from a broker database.
 
-View package & buy now: ${browse_url}
+Get your leads now: ${browse_url}
 
 If you've already purchased, disregard this — your CSV was delivered instantly.
 
@@ -222,11 +248,14 @@ ScrapeTra — Autonomous Lead Intelligence"""),
 <li>${lead_count} ${category} businesses in ${city}</li>
 <li>Every email MX-verified against DNS records (zero bounces)</li>
 <li>CSV delivered instantly after payment</li>
-<li>One-time price: ${symbol}${price} — no subscription</li>
+<li>One-time price: <strong style="color:#10b981;">${symbol}${trial_price}</strong> — no subscription</li>
 </ul>
-<p style="font-size:13px;margin:0;color:#9ca3af;">This data was scraped fresh on the day you receive this email. It's not recycled from a broker database.</p>
+<p style="font-size:13px;margin:0;color:#9ca3af;">Regular price: ${symbol}${price}</p>
 </div>
-<div style="text-align:center;"><a href="${browse_url}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:600;font-size:15px;margin:20px 0;">View Package & Buy Now</a></div>
+<div style="margin:20px 0;">
+<p style="font-size:14px;margin:0 0 8px 0;"><strong>Only a limited number of spots remain per city.</strong> Price increases Friday.</p>
+</div>
+<div style="text-align:center;"><a href="${browse_url}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:16px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px;margin:20px 0;">Get My Leads in 60 Seconds</a></div>
 <p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">If you've already purchased, disregard this — your CSV was delivered instantly.</p>
 <p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">Best regards,<br>The ScrapeTra Agent<br>ScrapeTra — Autonomous Lead Intelligence</p>"""),
     },
@@ -282,6 +311,7 @@ def generate_pitch_email(
     symbol: str = "\u00a3",
     browse_url: str = "",
     unsubscribe_url: str = "",
+    trial_price: float = 15.0,
 ) -> dict:
     tmpl_data = OUTREACH_TEMPLATES.get(template_style, OUTREACH_TEMPLATES["standard"])
 
@@ -296,6 +326,7 @@ def generate_pitch_email(
         "category": category,
         "city": city,
         "price": f"{price:.2f}",
+        "trial_price": f"{trial_price:.2f}",
         "symbol": symbol,
         "stripe_url": stripe_url or "#",
         "paypal_url": paypal_url or "#",
@@ -335,6 +366,7 @@ def generate_drip_email(
     symbol: str = "£",
     browse_url: str = "",
     unsubscribe_url: str = "",
+    trial_price: float = 15.0,
 ) -> dict:
     tmpl_data = OUTREACH_TEMPLATES["step2-followup"]
 
@@ -345,6 +377,7 @@ def generate_drip_email(
         "category": category,
         "city": city,
         "price": f"{price:.2f}",
+        "trial_price": f"{trial_price:.2f}",
         "symbol": symbol,
         "sender_name": sender_name,
         "browse_url": browse_url or "#",

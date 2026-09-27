@@ -167,10 +167,10 @@
         </div>
       </div>
 
-      <div class="detail-price">{{ symbol }}{{ '%.0f' | format(package.price) }} <span>/ package</span></div>
+<div class="detail-price" style="font-size:28px;"><span style="color:#10b981;">{{ symbol }}{{ '%.0f' | format(package.trial_price) }}</span> <span style="font-size:14px;color:#9ca3af;text-decoration:line-through;">{{ symbol }}{{ '%.0f' | format(package.price) }}</span> <span>/ package — first time buyer</span></div>
       <p class="detail-desc">{{ lead_count }} verified B2B email leads in {{ package.city }}. Delivered as CSV within 60 seconds.</p>
-
-      <button class="btn-buy" onclick="buyPackage()">Buy Now — {{ symbol }}{{ '%.0f' | format(package.price) }}</button>
+      <p style="color:#f59e0b;font-size:13px;margin-bottom:12px;font-weight:600;">⏱ Only a limited number of spots remain per city. Price increases Friday.</p>
+      <button class="btn-buy" onclick="buyPackage()">Get My Leads in 60 Seconds — {{ symbol }}{{ '%.0f' | format(package.trial_price) }}</button>
 
       <div class="features-grid">
         <div class="feature-item"><span class="feature-icon">&#x2713;</span><span class="feature-text">Company name & URL</span></div>
@@ -222,7 +222,7 @@
         window.location.href = data.url;
       } else {
         alert('Checkout failed: ' + (data.detail || 'Unknown error'));
-        btn.textContent = 'Buy Now — {{ symbol }}{{ "%.0f"|format(package.price) }}';
+btn.textContent = 'Buy Now — {{ symbol }}{{ "%.0f"|format(package.trial_price) }}';
         btn.disabled = false;
       }
     } catch (e) {

@@ -338,17 +338,18 @@ async def create_new_campaign(
         city=city,
         target_count=target_count,
         price=price,
+        trial_price=15.0,
         template_style=template_style,
     )
 
-    asyncio.create_task(_run_campaign(campaign_id, category, city, target_count, price, SENDER_NAME, template_style))
+    asyncio.create_task(_run_campaign(campaign_id, category, city, target_count, price, 15.0, SENDER_NAME, template_style))
 
     return JSONResponse({"campaign_id": campaign_id, "status": "pending"})
 
 
 async def _run_campaign(
     campaign_id: str, category: str, city: str,
-    target_count: int, price: float, sender_name: str,
+    target_count: int, price: float, trial_price: float, sender_name: str,
     template_style: str,
 ):
     try:
@@ -404,6 +405,7 @@ async def _run_campaign(
                     symbol=region_cfg["symbol"],
                     browse_url=f"{browse_base}/browse?region={region}",
                     unsubscribe_url=unsub_url,
+                    trial_price=campaign.get("trial_price", 15.0),
                 )
                 log_id = await log_outreach(campaign_id, pitch["to"], pitch["subject"])
                 sent = send_pitch_email(pitch["to"], pitch["subject"], pitch["body"], pitch.get("html", ""))
@@ -492,6 +494,7 @@ async def send_campaign_pitch(
             symbol=region_cfg["symbol"],
             browse_url=f"{browse_base}/browse?region={region}",
             unsubscribe_url=unsub_url,
+            trial_price=campaign.get("trial_price", 15.0),
         )
 
         log_id = await log_outreach(campaign_id, pitch["to"], pitch["subject"])
@@ -546,10 +549,9 @@ async def campaign_stripe_checkout(campaign_id: str, request: Request):
 
     origin = str(request.base_url).rstrip("/")
 
-    region = campaign.get("region", "uk")
-    region_cfg = REGIONS.get(region, REGIONS["uk"])
     currency = region_cfg["currency"].lower()
-    amount = int(campaign["price"] * 100)
+    trial_price = campaign.get("trial_price", campaign["price"])
+    amount = int(trial_price * 100)
 
     result = create_checkout_session(
         campaign_id, origin,
@@ -575,7 +577,8 @@ async def campaign_paypal_checkout(campaign_id: str, request: Request):
     region = campaign.get("region", "uk")
     region_cfg = REGIONS.get(region, REGIONS["uk"])
     currency = region_cfg["currency"]
-    amount = f"{campaign['price']:.2f}"
+    trial_price = campaign.get("trial_price", campaign["price"])
+    amount = f"{trial_price:.2f}"
 
     result = create_paypal_order(
         amount=amount,
@@ -588,7 +591,7 @@ async def campaign_paypal_checkout(campaign_id: str, request: Request):
     if "error" in result:
         raise HTTPException(status_code=400, detail=result["error"])
 
-    await create_payment(campaign_id, "", int(campaign["price"] * 100), currency)
+    await create_payment(campaign_id, "", int(trial_price * 100), currency)
     return {"approve_url": result["approve_url"], "order_id": result["order_id"]}
 
 
@@ -811,9 +814,10 @@ async def process_drips(request: Request):
                 price=campaign["price"],
                 sender_name=SENDER_NAME,
                 symbol=region_cfg["symbol"],
-                browse_url=f"{browse_base}/browse?region={region}",
-                unsubscribe_url=unsub_url,
-            )
+                 browse_url=f"{browse_base}/browse?region={region}",
+                 unsubscribe_url=unsub_url,
+                 trial_price=campaign.get("trial_price", 15.0),
+             )
 
             log_id = await log_outreach(cid, drip["to"], drip["subject"])
             sent = send_drip_email(drip["to"], drip["subject"], drip["body"], drip.get("html", ""))
@@ -866,6 +870,7 @@ async def scrape_package(
         country="United Kingdom" if region == "uk" else "United States",
         currency=region_cfg["currency"],
         price=region_cfg["price"],
+        trial_price=15.0,
         keyword=keyword,
     )
 
@@ -936,7 +941,8 @@ async def package_stripe_checkout(package_id: str, request: Request):
 
     origin = str(request.base_url).rstrip("/")
     currency = package["currency"].lower()
-    amount = int(package["price"] * 100)
+    trial_price = package.get("trial_price", package["price"])
+    amount = int(trial_price * 100)
 
     result = create_checkout_session(
         package_id, origin,
@@ -961,7 +967,8 @@ async def package_paypal_checkout(package_id: str, request: Request):
 
     origin = str(request.base_url).rstrip("/")
     currency = package["currency"]
-    amount = f"{package['price']:.2f}"
+    trial_price = package.get("trial_price", package["price"])
+    amount = f"{trial_price:.2f}"
 
     result = create_paypal_order(
         amount=amount,
@@ -973,7 +980,7 @@ async def package_paypal_checkout(package_id: str, request: Request):
     if "error" in result:
         raise HTTPException(status_code=400, detail=result["error"])
 
-    await create_payment(package_id, "", int(package["price"] * 100), currency)
+    await create_payment(package_id, "", int(trial_price * 100), currency)
     return {"approve_url": result["approve_url"], "order_id": result["order_id"]}
 
 

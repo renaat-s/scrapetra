@@ -96,6 +96,7 @@ async def init_db():
                     city TEXT NOT NULL,
                     target_count INTEGER DEFAULT 20,
                     price REAL DEFAULT 35.00,
+                    trial_price REAL DEFAULT 15.00,
                     template_style TEXT DEFAULT 'standard',
                     status TEXT DEFAULT 'pending',
                     leads_found INTEGER DEFAULT 0,
@@ -133,6 +134,7 @@ async def init_db():
                     country TEXT NOT NULL,
                     currency TEXT NOT NULL,
                     price REAL NOT NULL,
+                    trial_price REAL DEFAULT 15.00,
                     lead_count INTEGER DEFAULT 0,
                     status TEXT DEFAULT 'scraping',
                     csv_path TEXT,
@@ -170,6 +172,12 @@ async def init_db():
                     unsubscribed_at TEXT NOT NULL
                 )
             """)
+            await db.execute(
+                "ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS trial_price REAL DEFAULT 15.00"
+            )
+            await db.execute(
+                "ALTER TABLE packages ADD COLUMN IF NOT EXISTS trial_price REAL DEFAULT 15.00"
+            )
     except Exception as e:
         logger.error("Database initialization failed: %s", e)
 
@@ -315,6 +323,7 @@ async def create_campaign(
     city: str,
     target_count: int = 20,
     price: float = 35.0,
+    trial_price: float = 15.0,
     template_style: str = "standard",
 ) -> str:
     campaign_id = str(uuid.uuid4())
@@ -323,9 +332,9 @@ async def create_campaign(
     async with pool.acquire() as db:
         await db.execute(
             """INSERT INTO campaigns
-               (id, name, category, city, target_count, price, template_style, status, created_at)
-               VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending', $8)""",
-            campaign_id, name, category, city, target_count, price, template_style, now,
+               (id, name, category, city, target_count, price, trial_price, template_style, status, created_at)
+               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pending', $9)""",
+            campaign_id, name, category, city, target_count, price, trial_price, template_style, now,
         )
     return campaign_id
 
@@ -335,7 +344,7 @@ async def update_campaign(campaign_id: str, **kwargs):
         "status", "leads_found", "valid_emails", "csv_path",
         "buyer_email", "stripe_url", "paypal_url",
         "bank_sort", "bank_account", "bank_ref",
-        "completed_at", "delivered_at",
+        "completed_at", "delivered_at", "trial_price",
     }
     updates = {k: v for k, v in kwargs.items() if k in allowed}
     if not updates:
@@ -405,7 +414,7 @@ async def get_outreach_logs(campaign_id: str) -> list[dict]:
 
 async def create_package(
     region: str, city: str, country: str, currency: str,
-    price: float, keyword: str = "",
+    price: float, keyword: str = "", trial_price: float = 15.0,
 ) -> str:
     package_id = str(uuid.uuid4())
     now = datetime.utcnow().isoformat()
@@ -413,9 +422,9 @@ async def create_package(
     async with pool.acquire() as db:
         await db.execute(
             """INSERT INTO packages
-               (id, region, city, country, currency, price, status, keyword, created_at)
-               VALUES ($1, $2, $3, $4, $5, $6, 'scraping', $7, $8)""",
-            package_id, region, city, country, currency, price, keyword, now,
+               (id, region, city, country, currency, price, trial_price, status, keyword, created_at)
+               VALUES ($1, $2, $3, $4, $5, $6, $7, 'scraping', $8, $9)""",
+            package_id, region, city, country, currency, price, trial_price, keyword, now,
         )
     return package_id
 
@@ -423,6 +432,7 @@ async def create_package(
 async def update_package(package_id: str, **kwargs):
     allowed = {
         "status", "lead_count", "csv_path", "completed_at", "sold_at",
+        "trial_price",
     }
     updates = {k: v for k, v in kwargs.items() if k in allowed}
     if not updates:
