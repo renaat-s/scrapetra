@@ -324,7 +324,7 @@ async def create_new_campaign(
     category: str = Form(...),
     city: str = Form(...),
     target_count: int = Form(20),
-    price: float = Form(35.0),
+    price: float = Form(2500.0),
     template_style: str = Form("standard"),
 ):
     client_ip = request.client.host if request.client else "unknown"
@@ -339,11 +339,11 @@ async def create_new_campaign(
         city=city,
         target_count=target_count,
         price=price,
-        trial_price=15.0,
+        trial_price=price,
         template_style=template_style,
     )
 
-    asyncio.create_task(_run_campaign(campaign_id, category, city, target_count, price, 15.0, SENDER_NAME, template_style))
+    asyncio.create_task(_run_campaign(campaign_id, category, city, target_count, price, price, SENDER_NAME, template_style))
 
     return JSONResponse({"campaign_id": campaign_id, "status": "pending"})
 
@@ -555,9 +555,11 @@ async def campaign_stripe_checkout(campaign_id: str, request: Request):
 
     origin = str(request.base_url).rstrip("/")
 
+    region = campaign.get("region", "uk")
+    region_cfg = REGIONS.get(region, REGIONS["uk"])
     currency = region_cfg["currency"].lower()
-    trial_price = campaign.get("trial_price", campaign["price"])
-    amount = int(trial_price * 100)
+    price = campaign.get("price", region_cfg["price"])
+    amount = int(price * 100)
 
     result = create_checkout_session(
         campaign_id, origin,
@@ -583,8 +585,8 @@ async def campaign_paypal_checkout(campaign_id: str, request: Request):
     region = campaign.get("region", "uk")
     region_cfg = REGIONS.get(region, REGIONS["uk"])
     currency = region_cfg["currency"]
-    trial_price = campaign.get("trial_price", campaign["price"])
-    amount = f"{trial_price:.2f}"
+    price = campaign.get("price", region_cfg["price"])
+    amount = f"{price:.2f}"
 
     result = create_paypal_order(
         amount=amount,

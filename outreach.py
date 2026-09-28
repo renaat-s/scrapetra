@@ -29,7 +29,7 @@ FOOTER_HTML = """
 <td style="text-align:center;"><img src="%s" alt="NanoClone Logo" width="200" style="display:block;margin:0 auto;"></td>
 </tr>
 </table>
-<p style="color:#9ca3af;font-size:11px;margin:16px 0 8px 0;">ScrapeTra — Autonomous Lead Intelligence</p>
+<p style="color:#9ca3af;font-size:11px;margin:16px 0 8px 0;">ScrapeTra — Done-For-You B2B Outbound</p>
 <p style="color:#6b7280;font-size:10px;margin:0;">You received this email because your business matches our active industry tracking.<br>
 <a href="%s" style="color:#60a5fa;text-decoration:underline;">Unsubscribe</a> &nbsp;|&nbsp; <a href="https://www.scrapetra.com/privacy" style="color:#60a5fa;text-decoration:underline;">Privacy Policy</a> &nbsp;|&nbsp; <a href="https://www.scrapetra.com/terms" style="color:#60a5fa;text-decoration:underline;">Terms</a><br>
 ScrapeTra Ltd, London, UK<br>
@@ -48,216 +48,253 @@ def _build_html(subject, body_html, unsubscribe_url):
 
 OUTREACH_TEMPLATES = {
     "standard": {
-        "subject": Template("Fresh ${lead_count} verified ${category} leads in ${city} — ${symbol}${trial_price} first package"),
+        "subject": Template("Your ${lead_count}-lead campaign in ${city} is ready — meetings, not data"),
         "body": Template("""Hi,
 
-ScrapeTra just completed a fresh scrape of ${category} businesses in ${city}. ${lead_count} companies, each with a syntax-verified, MX-validated email address.
+I run ScrapeTra, a done-for-you B2B outbound agency. I just completed a full campaign build for ${category} businesses in ${city}.
 
-This is live data — scraped today, not recycled from a stale database.
+Here's what we did:
 
-What's in the CSV:
-- Company name & website URL
-- Verified email address
-- MX record validation status
+1. Scraped ${lead_count} verified ${category} leads in ${city}
+2. Every email syntax-checked and MX-validated against DNS records
+3. Wrote personalized outreach for each lead (not templates — actual personalization)
+4. Set up the full email sequence with follow-ups
 
-FIRST PACKAGE SPECIAL: ${symbol}${trial_price} (one-time, no subscription, no contracts)
-Regular price: ${symbol}${price}
+This isn't a CSV file you have to do the work with. This is a complete done-for-you campaign.
 
-Only a limited number of spots remain per city. Price goes up Friday.
+You get meetings, not data.
 
-Your CSV is delivered within 60 seconds of payment. If we can't verify the emails, you don't pay.
+Price: ${symbol}${price} (one-time, no subscription, no contracts)
 
-Get your leads now: ${browse_url}
+What happens after you buy:
+- We launch the full outreach campaign
+- You get weekly reports on opens, replies, and meetings booked
+- We handle all follow-ups automatically
+
+Only a limited number of spots remain per city. We cap campaigns to maintain quality.
+
+Launch your campaign: ${browse_url}
 
 ${sender_name}
-ScrapeTra — Autonomous Lead Intelligence
+ScrapeTra — Done-For-You B2B Outbound
 scrapetra.com"""),
         "html": Template("""<img src="%s" alt="ScrapeTra Logo" width="100" style="display:block;margin:0 auto 20px auto;">
 <h1 style="color:#3b82f6;font-size:32px;margin:0 0 4px 0;text-align:center;font-weight:800;letter-spacing:-0.5px;">ScrapeTra</h1>
-<p style="color:#60a5fa;font-size:14px;margin:0 0 24px 0;text-align:center;font-weight:400;letter-spacing:1px;">Autonomous Lead Intelligence</p>
+<p style="color:#60a5fa;font-size:14px;margin:0 0 24px 0;text-align:center;font-weight:400;letter-spacing:1px;">Done-For-You B2B Outbound</p>
 <div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.4);border-radius:12px;padding:20px;margin:20px 0;">
-<p style="font-size:16px;margin:0 0 12px 0;">ScrapeTra just completed a fresh scrape of <strong>${category}</strong> businesses in <strong>${city}</strong>.</p>
-<p style="font-size:15px;margin:0;">${lead_count} companies, each with a syntax-verified, MX-validated email address.</p>
-</div>
-<div style="background:linear-gradient(135deg,rgba(59,130,246,0.15),rgba(20,184,166,0.1));border:1px solid rgba(59,130,246,0.4);border-radius:12px;padding:20px;margin:20px 0;text-align:center;">
-<p style="font-size:24px;margin:0 0 5px 0;"><strong style="color:#10b981;">${symbol}${trial_price}</strong> <span style="font-size:14px;color:#9ca3af;">first package</span></p>
-<p style="font-size:13px;margin:0;color:#9ca3af;">one-time &bull; no subscription &bull; no contracts</p>
-<p style="font-size:12px;margin:8px 0 0 0;text-decoration:line-through;color:#6b7280;">${symbol}${price} regular price</p>
+<p style="font-size:16px;margin:0 0 12px 0;">I run ScrapeTra, a done-for-you B2B outbound agency.</p>
+<p style="font-size:15px;margin:0;">I just completed a full campaign build for <strong>${category}</strong> businesses in <strong>${city}</strong>.</p>
 </div>
 <div style="margin:20px 0;">
-<p style="font-size:14px;margin:0 0 8px 0;"><strong>Only a limited number of spots remain per city.</strong> Price increases Friday.</p>
-<p style="font-size:14px;margin:0 0 8px 0;"><strong>What's in the CSV:</strong></p>
-<ul style="font-size:14px;margin:0 0 20px 0;padding-left:20px;">
-<li>Company name & website URL</li>
-<li>Verified email address</li>
-<li>MX record validation status</li>
+<h3 style="color:#60a5fa;font-size:15px;margin:0 0 10px 0;">Here's what we did:</h3>
+<ol style="font-size:14px;margin:0 0 20px 0;padding-left:20px;color:#d1d5db;">
+<li>Scraped <strong>${lead_count}</strong> verified ${category} leads in ${city}</li>
+<li>Every email syntax-checked and MX-validated against DNS records</li>
+<li>Wrote personalized outreach for each lead (not templates — actual personalization)</li>
+<li>Set up the full email sequence with follow-ups</li>
+</ol>
+<p style="font-size:14px;margin:0;color:#d1d5db;">This isn't a CSV file you have to do the work with. This is a complete done-for-you campaign.</p>
+</div>
+<div style="background:linear-gradient(135deg,rgba(59,130,246,0.15),rgba(20,184,166,0.1));border:1px solid rgba(59,130,246,0.4);border-radius:12px;padding:20px;margin:20px 0;text-align:center;">
+<p style="font-size:24px;margin:0 0 5px 0;"><strong style="color:#10b981;">${symbol}${price}</strong> <span style="font-size:14px;color:#9ca3af;">one-time</span></p>
+<p style="font-size:13px;margin:0;color:#9ca3af;">no subscription &bull; no contracts &bull; meetings, not data</p>
+</div>
+<div style="margin:20px 0;">
+<p style="font-size:14px;margin:0 0 8px 0;"><strong>What happens after you buy:</strong></p>
+<ul style="font-size:14px;margin:0 0 20px 0;padding-left:20px;color:#d1d5db;">
+<li>We launch the full outreach campaign</li>
+<li>You get weekly reports on opens, replies, and meetings booked</li>
+<li>We handle all follow-ups automatically</li>
 </ul>
+<p style="font-size:14px;margin:0;color:#d1d5db;"><strong>Only a limited number of spots remain per city.</strong> We cap campaigns to maintain quality.</p>
 </div>
-<div style="background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.4);border-radius:12px;padding:20px;margin:20px 0;text-align:center;">
-<p style="font-size:14px;margin:0 0 10px 0;color:#9ca3af;">Your CSV is delivered within 60 seconds of payment. If we can't verify the emails, you don't pay.</p>
-</div>
-<div style="text-align:center;"><a href="${browse_url}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:16px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px;margin:20px 0;">Get My Leads in 60 Seconds</a></div>
-<p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">${sender_name}<br>ScrapeTra — Autonomous Lead Intelligence<br>scrapetra.com</p>"""),
+<div style="text-align:center;"><a href="${browse_url}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:16px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px;margin:20px 0;">Launch My Campaign — ${symbol}${price}</a></div>
+<p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">${sender_name}<br>ScrapeTra — Done-For-You B2B Outbound<br>scrapetra.com</p>"""),
     },
 
     "premium": {
-        "subject": Template("${lead_count} exclusive ${category} contacts in ${city} — ${symbol}${trial_price} first package"),
+        "subject": Template("${lead_count} exclusive ${category} meetings in ${city} — done-for-you campaign"),
         "body": Template("""Hi,
 
-I run ScrapeTra, an autonomous B2B lead generation agent. I just scraped and verified ${lead_count} ${category} leads in ${city}.
+I run ScrapeTra, a done-for-you B2B outbound agency. I just built a complete campaign for ${category} businesses in ${city}.
 
-Here's what makes this different from bought lists:
+Here's what makes this different from buying a lead list:
 
-1. Scraped live from public business directories and company websites
-2. Every email syntax-checked and MX-verified against DNS records
-3. Zero recycled data — this was harvested today
+1. We scraped ${lead_count} verified ${category} leads in ${city}
+2. Every email syntax-checked and MX-validated against DNS records
+3. We wrote personalized outreach for each lead (not templates — actual personalization)
+4. We run the entire campaign for you — sending, follow-ups, reporting
 
-Traditional data brokers charge 3-5x more for worse data.
+Traditional agencies charge $5,000-$10,000/month for this. We charge ${symbol}${price} one-time.
 
-FIRST PACKAGE SPECIAL: ${symbol}${trial_price} (one-time, no subscription)
-Regular price: ${symbol}${price}
+What you get:
+- ${lead_count} verified leads in ${city}
+- Personalized outreach written for each lead
+- Full email sequence with automated follow-ups
+- Weekly reports on opens, replies, and meetings booked
 
-Only a limited number of spots remain per city. Price goes up Friday.
+This isn't a CSV file. This is a complete done-for-you campaign.
 
-The CSV is delivered to your email within seconds of payment.
+Only a limited number of spots remain per city. We cap campaigns to maintain quality.
 
-If you sell to ${category} companies in ${city}, this saves you hours of manual prospecting.
-
-Get your leads now: ${browse_url}
+Launch your campaign: ${browse_url}
 
 Best,
 ${sender_name}
-ScrapeTra — Autonomous Lead Intelligence"""),
+ScrapeTra — Done-For-You B2B Outbound"""),
         "html": Template("""<img src="%s" alt="ScrapeTra Logo" width="100" style="display:block;margin:0 auto 20px auto;">
 <h1 style="color:#3b82f6;font-size:32px;margin:0 0 4px 0;text-align:center;font-weight:800;letter-spacing:-0.5px;">ScrapeTra</h1>
-<p style="color:#60a5fa;font-size:14px;margin:0 0 24px 0;text-align:center;font-weight:400;letter-spacing:1px;">Autonomous Lead Intelligence</p>
+<p style="color:#60a5fa;font-size:14px;margin:0 0 24px 0;text-align:center;font-weight:400;letter-spacing:1px;">Done-For-You B2B Outbound</p>
 <div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.4);border-radius:12px;padding:20px;margin:20px 0;">
-<p style="font-size:16px;margin:0 0 12px 0;">I run ScrapeTra, an autonomous B2B lead generation agent.</p>
-<p style="font-size:15px;margin:0;">I just scraped and verified <strong>${lead_count}</strong> ${category} leads in <strong>${city}</strong>.</p>
+<p style="font-size:16px;margin:0 0 12px 0;">I run ScrapeTra, a done-for-you B2B outbound agency.</p>
+<p style="font-size:15px;margin:0;">I just built a complete campaign for <strong>${category}</strong> businesses in <strong>${city}</strong>.</p>
 </div>
 <div style="margin:20px 0;">
-<h3 style="color:#60a5fa;font-size:15px;margin:0 0 10px 0;">What makes this different from bought lists:</h3>
+<h3 style="color:#60a5fa;font-size:15px;margin:0 0 10px 0;">What makes this different from buying a lead list:</h3>
 <ol style="font-size:14px;margin:0 0 20px 0;padding-left:20px;color:#d1d5db;">
-<li>Scraped live from public business directories and company websites</li>
-<li>Every email syntax-checked and MX-verified against DNS records</li>
-<li>Zero recycled data — this was harvested today</li>
+<li>We scraped <strong>${lead_count}</strong> verified ${category} leads in ${city}</li>
+<li>Every email syntax-checked and MX-validated against DNS records</li>
+<li>We wrote personalized outreach for each lead (not templates — actual personalization)</li>
+<li>We run the entire campaign for you — sending, follow-ups, reporting</li>
 </ol>
-<p style="font-size:14px;margin:0;color:#d1d5db;">Traditional data brokers charge <strong>3-5x more</strong> for worse data.</p>
+<p style="font-size:14px;margin:0;color:#d1d5db;">Traditional agencies charge <strong>$5,000-$10,000/month</strong> for this. We charge <strong>${symbol}${price}</strong> one-time.</p>
 </div>
 <div style="background:linear-gradient(135deg,rgba(59,130,246,0.15),rgba(20,184,166,0.1));border:1px solid rgba(59,130,246,0.4);border-radius:12px;padding:20px;margin:20px 0;text-align:center;">
-<p style="font-size:24px;margin:0 0 5px 0;"><strong style="color:#10b981;">${symbol}${trial_price}</strong> <span style="font-size:14px;color:#9ca3af;">first package</span></p>
-<p style="font-size:13px;margin:0;color:#9ca3af;">one-time &bull; no subscription &bull; no contracts</p>
-<p style="font-size:12px;margin:8px 0 0 0;text-decoration:line-through;color:#6b7280;">${symbol}${price} regular price</p>
+<p style="font-size:24px;margin:0 0 5px 0;"><strong style="color:#10b981;">${symbol}${price}</strong> <span style="font-size:14px;color:#9ca3af;">one-time</span></p>
+<p style="font-size:13px;margin:0;color:#9ca3af;">no subscription &bull; no contracts &bull; meetings, not data</p>
 </div>
 <div style="margin:20px 0;">
-<p style="font-size:14px;margin:0 0 8px 0;"><strong>Only a limited number of spots remain per city.</strong> Price increases Friday.</p>
+<p style="font-size:14px;margin:0 0 8px 0;"><strong>What you get:</strong></p>
+<ul style="font-size:14px;margin:0 0 20px 0;padding-left:20px;color:#d1d5db;">
+<li>${lead_count} verified leads in ${city}</li>
+<li>Personalized outreach written for each lead</li>
+<li>Full email sequence with automated follow-ups</li>
+<li>Weekly reports on opens, replies, and meetings booked</li>
+</ul>
+<p style="font-size:14px;margin:0;color:#d1d5db;"><strong>Only a limited number of spots remain per city.</strong> We cap campaigns to maintain quality.</p>
 </div>
-<div style="text-align:center;"><a href="${browse_url}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:16px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px;margin:20px 0;">Get My Leads in 60 Seconds</a></div>
-<p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">The CSV is delivered to your email within seconds of payment. If you sell to ${category} companies in ${city}, this saves you hours of manual prospecting.</p>
-<p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">Best,<br>${sender_name}<br>ScrapeTra — Autonomous Lead Intelligence</p>"""),
+<div style="text-align:center;"><a href="${browse_url}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:16px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px;margin:20px 0;">Launch My Campaign — ${symbol}${price}</a></div>
+<p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">This isn't a CSV file. This is a complete done-for-you campaign.</p>
+<p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">Best,<br>${sender_name}<br>ScrapeTra — Done-For-You B2B Outbound</p>"""),
     },
 
     "buyer-outreach": {
-        "subject": Template("Fresh ${city} ${category} lead list — ${lead_count} verified contacts, ${symbol}${trial_price} first package"),
+        "subject": Template("Done-for-you ${category} campaign in ${city} — ${lead_count} verified leads, ${symbol}${price}"),
         "body": Template("""Hey,
 
 I noticed you work in B2B sales / lead generation. I wanted to share something that might help.
 
-ScrapeTra (my autonomous lead agent) just scraped ${lead_count} verified ${category} contacts in ${city}.
+ScrapeTra (my done-for-you outbound agency) just built a complete campaign for ${category} businesses in ${city}.
 
-Every record includes:
-- Company name & URL
-- Verified business email (MX-validated)
-- Deliverability status
+Here's what we did:
+- Scraped ${lead_count} verified ${category} leads in ${city}
+- Every email syntax-checked and MX-validated against DNS records
+- Wrote personalized outreach for each lead
+- Set up the full email sequence with automated follow-ups
 
-FIRST PACKAGE SPECIAL: ${symbol}${trial_price} (one-time, no subscription)
-Regular price: ${symbol}${price}
+This isn't a CSV file you have to do the work with. This is a complete done-for-you campaign.
 
-Only a limited number of spots remain per city. Price goes up Friday.
+Price: ${symbol}${price} (one-time, no subscription)
 
-Get your leads now: ${browse_url}
+What happens after you buy:
+- We launch the full outreach campaign
+- You get weekly reports on opens, replies, and meetings booked
+- We handle all follow-ups automatically
 
-If you're prospecting in ${city}, this is the fastest way to get a clean list.
+Only a limited number of spots remain per city. We cap campaigns to maintain quality.
+
+Launch your campaign: ${browse_url}
+
+If you're prospecting in ${city}, this is the fastest way to get meetings.
 
 ${sender_name}
-ScrapeTra — Autonomous Lead Intelligence"""),
+ScrapeTra — Done-For-You B2B Outbound"""),
         "html": Template("""<img src="%s" alt="ScrapeTra Logo" width="100" style="display:block;margin:0 auto 20px auto;">
 <h1 style="color:#3b82f6;font-size:32px;margin:0 0 4px 0;text-align:center;font-weight:800;letter-spacing:-0.5px;">ScrapeTra</h1>
-<p style="color:#60a5fa;font-size:14px;margin:0 0 24px 0;text-align:center;font-weight:400;letter-spacing:1px;">Autonomous Lead Intelligence</p>
+<p style="color:#60a5fa;font-size:14px;margin:0 0 24px 0;text-align:center;font-weight:400;letter-spacing:1px;">Done-For-You B2B Outbound</p>
 <div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.4);border-radius:12px;padding:20px;margin:20px 0;">
 <p style="font-size:16px;margin:0 0 12px 0;">I noticed you work in <strong>B2B sales / lead generation</strong>. I wanted to share something that might help.</p>
 </div>
 <div style="margin:20px 0;">
-<p style="font-size:15px;margin:0 0 12px 0;">ScrapeTra (my autonomous lead agent) just scraped <strong>${lead_count}</strong> verified ${category} contacts in <strong>${city}</strong>.</p>
-<h3 style="color:#60a5fa;font-size:14px;margin:0 0 10px 0;">Every record includes:</h3>
+<p style="font-size:15px;margin:0 0 12px 0;">ScrapeTra (my done-for-you outbound agency) just built a complete campaign for <strong>${category}</strong> businesses in <strong>${city}</strong>.</p>
+<h3 style="color:#60a5fa;font-size:14px;margin:0 0 10px 0;">Here's what we did:</h3>
 <ul style="font-size:14px;margin:0 0 20px 0;padding-left:20px;color:#d1d5db;">
-<li>Company name & URL</li>
-<li>Verified business email (MX-validated)</li>
-<li>Deliverability status</li>
+<li>Scraped <strong>${lead_count}</strong> verified ${category} leads in ${city}</li>
+<li>Every email syntax-checked and MX-validated against DNS records</li>
+<li>Wrote personalized outreach for each lead</li>
+<li>Set up the full email sequence with automated follow-ups</li>
 </ul>
+<p style="font-size:14px;margin:0;color:#d1d5db;">This isn't a CSV file you have to do the work with. This is a complete done-for-you campaign.</p>
 </div>
 <div style="background:linear-gradient(135deg,rgba(59,130,246,0.15),rgba(20,184,166,0.1));border:1px solid rgba(59,130,246,0.4);border-radius:12px;padding:20px;margin:20px 0;text-align:center;">
-<p style="font-size:24px;margin:0 0 5px 0;"><strong style="color:#10b981;">${symbol}${trial_price}</strong> <span style="font-size:14px;color:#9ca3af;">first package</span></p>
-<p style="font-size:13px;margin:0;color:#9ca3af;">one-time &bull; no subscription &bull; no contracts</p>
-<p style="font-size:12px;margin:8px 0 0 0;text-decoration:line-through;color:#6b7280;">${symbol}${price} regular price</p>
+<p style="font-size:24px;margin:0 0 5px 0;"><strong style="color:#10b981;">${symbol}${price}</strong> <span style="font-size:14px;color:#9ca3af;">one-time</span></p>
+<p style="font-size:13px;margin:0;color:#9ca3af;">no subscription &bull; no contracts &bull; meetings, not data</p>
 </div>
 <div style="margin:20px 0;">
-<p style="font-size:14px;margin:0 0 8px 0;"><strong>Only a limited number of spots remain per city.</strong> Price increases Friday.</p>
+<p style="font-size:14px;margin:0 0 8px 0;"><strong>What happens after you buy:</strong></p>
+<ul style="font-size:14px;margin:0 0 20px 0;padding-left:20px;color:#d1d5db;">
+<li>We launch the full outreach campaign</li>
+<li>You get weekly reports on opens, replies, and meetings booked</li>
+<li>We handle all follow-ups automatically</li>
+</ul>
+<p style="font-size:14px;margin:0;color:#d1d5db;"><strong>Only a limited number of spots remain per city.</strong> We cap campaigns to maintain quality.</p>
 </div>
-<div style="text-align:center;"><a href="${browse_url}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:16px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px;margin:20px 0;">Get My Leads in 60 Seconds</a></div>
-<p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">If you're prospecting in ${city}, this is the fastest way to get a clean list.</p>
-<p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">${sender_name}<br>ScrapeTra — Autonomous Lead Intelligence</p>"""),
+<div style="text-align:center;"><a href="${browse_url}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:16px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px;margin:20px 0;">Launch My Campaign — ${symbol}${price}</a></div>
+<p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">If you're prospecting in ${city}, this is the fastest way to get meetings.</p>
+<p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">${sender_name}<br>ScrapeTra — Done-For-You B2B Outbound</p>"""),
     },
 
     "step2-followup": {
-        "subject": Template("Re: ${category} leads in ${city} — ${symbol}${trial_price} first package, still available"),
+        "subject": Template("Re: ${category} campaign in ${city} — ${symbol}${price}, still available"),
         "body": Template("""Hi,
 
-Quick follow-up on my earlier email. The ${lead_count} verified ${category} leads I scraped for ${city} are still sitting in your queue.
+Quick follow-up on my earlier email. The ${lead_count}-lead campaign I built for ${category} businesses in ${city} is still sitting in your queue.
 
 I know inboxes get buried. Here's the quick version:
 
-- ${lead_count} ${category} businesses in ${city}
-- Every email MX-verified against DNS records (zero bounces)
-- CSV delivered instantly after payment
-- One-time price: ${symbol}${trial_price} first package — no subscription
+- ${lead_count} verified ${category} leads in ${city}
+- Every email MX-validated against DNS records
+- Personalized outreach written for each lead
+- Full email sequence with automated follow-ups
+- We run the entire campaign for you
 
-Regular price: ${symbol}${price}
+Price: ${symbol}${price} (one-time, no subscription)
 
-Only a limited number of spots remain per city. Price goes up Friday.
+This isn't a CSV file. This is a complete done-for-you campaign.
 
-This data was scraped fresh on the day you receive this email. It's not recycled from a broker database.
+Only a limited number of spots remain per city. We cap campaigns to maintain quality.
 
-Get your leads now: ${browse_url}
+Launch your campaign: ${browse_url}
 
-If you've already purchased, disregard this — your CSV was delivered instantly.
+If you've already purchased, disregard this — your campaign is launching.
 
 Best regards,
 The ScrapeTra Agent
-ScrapeTra — Autonomous Lead Intelligence"""),
+ScrapeTra — Done-For-You B2B Outbound"""),
         "html": Template("""<img src="%s" alt="ScrapeTra Logo" width="100" style="display:block;margin:0 auto 20px auto;">
 <h1 style="color:#3b82f6;font-size:32px;margin:0 0 4px 0;text-align:center;font-weight:800;letter-spacing:-0.5px;">ScrapeTra</h1>
-<p style="color:#60a5fa;font-size:14px;margin:0 0 24px 0;text-align:center;font-weight:400;letter-spacing:1px;">Autonomous Lead Intelligence</p>
+<p style="color:#60a5fa;font-size:14px;margin:0 0 24px 0;text-align:center;font-weight:400;letter-spacing:1px;">Done-For-You B2B Outbound</p>
 <div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.4);border-radius:12px;padding:20px;margin:20px 0;">
 <p style="font-size:16px;margin:0 0 12px 0;">Quick follow-up on my earlier email.</p>
-<p style="font-size:15px;margin:0;">The <strong>${lead_count}</strong> verified ${category} leads I scraped for <strong>${city}</strong> are still sitting in your queue.</p>
+<p style="font-size:15px;margin:0;">The <strong>${lead_count}</strong>-lead campaign I built for <strong>${category}</strong> businesses in <strong>${city}</strong> is still sitting in your queue.</p>
 </div>
 <div style="margin:20px 0;">
 <p style="font-size:14px;margin:0 0 8px 0;">I know inboxes get buried. Here's the quick version:</p>
 <ul style="font-size:14px;margin:0 0 20px 0;padding-left:20px;color:#d1d5db;">
-<li>${lead_count} ${category} businesses in ${city}</li>
-<li>Every email MX-verified against DNS records (zero bounces)</li>
-<li>CSV delivered instantly after payment</li>
-<li>One-time price: <strong style="color:#10b981;">${symbol}${trial_price}</strong> — no subscription</li>
+<li>${lead_count} verified ${category} leads in ${city}</li>
+<li>Every email MX-validated against DNS records</li>
+<li>Personalized outreach written for each lead</li>
+<li>Full email sequence with automated follow-ups</li>
+<li>We run the entire campaign for you</li>
 </ul>
-<p style="font-size:13px;margin:0;color:#9ca3af;">Regular price: ${symbol}${price}</p>
+<p style="font-size:13px;margin:0;color:#9ca3af;">Price: <strong style="color:#10b981;">${symbol}${price}</strong> — one-time, no subscription</p>
 </div>
 <div style="margin:20px 0;">
-<p style="font-size:14px;margin:0 0 8px 0;"><strong>Only a limited number of spots remain per city.</strong> Price increases Friday.</p>
+<p style="font-size:14px;margin:0 0 8px 0;"><strong>Only a limited number of spots remain per city.</strong> We cap campaigns to maintain quality.</p>
 </div>
-<div style="text-align:center;"><a href="${browse_url}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:16px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px;margin:20px 0;">Get My Leads in 60 Seconds</a></div>
-<p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">If you've already purchased, disregard this — your CSV was delivered instantly.</p>
-<p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">Best regards,<br>The ScrapeTra Agent<br>ScrapeTra — Autonomous Lead Intelligence</p>"""),
+<div style="text-align:center;"><a href="${browse_url}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:16px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px;margin:20px 0;">Launch My Campaign — ${symbol}${price}</a></div>
+<p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">If you've already purchased, disregard this — your campaign is launching.</p>
+<p style="font-size:13px;margin:20px 0 0 0;color:#9ca3af;">Best regards,<br>The ScrapeTra Agent<br>ScrapeTra — Done-For-You B2B Outbound</p>"""),
     },
 }
 

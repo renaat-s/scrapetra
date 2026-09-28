@@ -31,12 +31,13 @@ BANK_SORT_CODE = os.getenv("SCRAPETRA_BANK_SORT_CODE", "09-01-29")
 BANK_ACCOUNT = os.getenv("SCRAPETRA_BANK_ACCOUNT", "02337157")
 BANK_NAME = os.getenv("SCRAPETRA_BANK_NAME", "SANTANDER UK")
 
+DEFAULT_CAMPAIGN_PRICE = float(os.getenv("SCRAPETRA_CAMPAIGN_PRICE", "2500.00"))
 DEFAULT_LEAD_PRICE = float(os.getenv("SCRAPETRA_LEAD_PRICE", "35.00"))
 DEFAULT_LEAD_PRICE_US = float(os.getenv("SCRAPETRA_LEAD_PRICE_US", "45.00"))
 
 REGIONS = {
-    "uk": {"region_code": "uk-en", "currency": "GBP", "symbol": "£", "price": DEFAULT_LEAD_PRICE},
-    "us": {"region_code": "us-en", "currency": "USD", "symbol": "$", "price": DEFAULT_LEAD_PRICE_US},
+    "uk": {"region_code": "uk-en", "currency": "GBP", "symbol": "£", "price": DEFAULT_CAMPAIGN_PRICE},
+    "us": {"region_code": "us-en", "currency": "USD", "symbol": "$", "price": DEFAULT_CAMPAIGN_PRICE},
 }
 
 SCRAPE_TARGETS = {

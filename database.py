@@ -322,8 +322,8 @@ async def create_campaign(
     category: str,
     city: str,
     target_count: int = 20,
-    price: float = 35.0,
-    trial_price: float = 15.0,
+    price: float = 2500.0,
+    trial_price: float = 2500.0,
     template_style: str = "standard",
 ) -> str:
     campaign_id = str(uuid.uuid4())
