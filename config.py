@@ -65,3 +65,5 @@ ADMIN_PASSWORD = os.getenv("SCRAPETRA_ADMIN_PASSWORD", "scrapetra-admin-2026")
 SESSION_SECRET = os.getenv("SCRAPETRA_SESSION_SECRET", "scrapetra-session-secret-change-me")
 SESSION_MAX_AGE = 86400  # 24 hours
 BASE_URL = os.getenv("SCRAPETRA_BASE_URL", "https://www.scrapetra.com")
+
+EMAIL_PAUSED = os.getenv("SCRAPETRA_EMAIL_PAUSED", "true").lower() == "true"

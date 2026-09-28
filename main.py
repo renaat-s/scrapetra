@@ -24,7 +24,7 @@ from config import (
     DEFAULT_LEAD_PRICE, SENDER_NAME, SENDER_EMAIL,
     REGIONS, SCRAPE_TARGETS, PACKAGE_LEAD_COUNT,
     ADMIN_PASSWORD, SESSION_SECRET, SESSION_MAX_AGE, BASE_URL,
-    RESEND_API_KEY,
+    RESEND_API_KEY, EMAIL_PAUSED,
 )
 from database import (
     init_db, create_search, update_search_status, insert_leads,
@@ -149,6 +149,7 @@ async def diagnostics(request: Request):
         "resend_configured": resend_ok,
         "sender_email": SENDER_EMAIL or "(not set)",
         "resend_error": resend_error,
+        "emails_paused": EMAIL_PAUSED,
     }
 
 
@@ -378,7 +379,7 @@ async def _run_campaign(
 
         leads = await get_leads(campaign_id)
         valid_leads = [l for l in leads if l.get("email") and l.get("email_valid")]
-        if valid_leads:
+        if valid_leads and not EMAIL_PAUSED:
             campaign = await get_campaign(campaign_id)
             region = (campaign or {}).get("region", "uk")
             region_cfg = REGIONS.get(region, REGIONS["uk"])
@@ -414,6 +415,8 @@ async def _run_campaign(
                     emails_sent += 1
                 await asyncio.sleep(1)
             await update_campaign(campaign_id, status="pitched", emails_sent=emails_sent)
+        elif EMAIL_PAUSED:
+            await update_campaign(campaign_id, status="paused", emails_sent=0)
         else:
             await update_campaign(campaign_id, status="pitched", emails_sent=0)
     except Exception as e:
@@ -454,6 +457,9 @@ async def send_campaign_pitch(
 ):
     if api_key != API_KEY:
         raise HTTPException(status_code=401, detail="Invalid API key")
+
+    if EMAIL_PAUSED:
+        return JSONResponse({"status": "paused", "detail": "Email sending is paused for maintenance"})
 
     campaign = await get_campaign(campaign_id)
     if not campaign:
@@ -784,6 +790,9 @@ async def process_drips(request: Request):
     api_key = request.headers.get("X-API-Key", "") or request.query_params.get("api_key", "")
     if api_key != API_KEY:
         raise HTTPException(status_code=401, detail="Invalid API key")
+
+    if EMAIL_PAUSED:
+        return JSONResponse({"status": "paused", "detail": "Email sending is paused for maintenance"})
 
     campaigns = await get_drip_eligible_campaigns(days_since_pitch=3)
     results = []
